@@ -1,0 +1,130 @@
+# ========================================
+# BACKEND (NestJS)
+# ========================================
+
+# compiled output
+backend/dist
+backend/node_modules
+backend/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Tests
+backend/coverage
+backend/.nyc_output
+
+# Environment
+backend/.env
+backend/.env.local
+backend/.env.*.local
+
+# Prisma
+backend/prisma/migrations/**/migration.sql
+
+# ========================================
+# MOBILE (Flutter)
+# ========================================
+
+# Miscellaneous
+mobile/*.class
+mobile/*.log
+mobile/*.pyc
+mobile/*.swp
+mobile/.DS_Store
+mobile/.atom/
+mobile/.buildlog/
+mobile/.history
+mobile/.svn/
+mobile/migrate_working_dir/
+
+# IntelliJ related
+mobile/*.iml
+mobile/*.ipr
+mobile/*.iws
+mobile/.idea/
+
+# Flutter/Dart/Pub related
+mobile/**/doc/api/
+mobile/**/ios/Flutter/.last_build_id
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+
+# Symbolication related
+mobile/app.*.symbols
+
+# Obfuscation related
+mobile/app.*.map.json
+
+# Android Studio will place build artifacts here
+mobile/android/app/debug
+mobile/android/app/profile
+mobile/android/app/release
+
+# iOS specific
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/app.flx
+mobile/ios/Flutter/app.zip
+mobile/ios/Flutter/flutter_assets/
+mobile/ios/ServiceDefinitions.json
+mobile/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS specific
+mobile/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Web specific
+mobile/web/flutter_service_worker.js
+
+# Windows specific
+mobile/windows/flutter/generated_plugin_registrant.cc
+mobile/windows/flutter/generated_plugin_registrant.h
+
+# Flutter environment
+mobile/.env
+mobile/.env.local
+mobile/.env.*.local
+
+# ========================================
+# SHARED
+# ========================================
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Temp files
+temp/
+tmp/
+*.tmp
+
+# Node modules (catch-all)
+node_modules/

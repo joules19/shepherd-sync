@@ -1,0 +1,790 @@
+// Shepherd Sync - Prisma Schema
+// Multi-tenant SaaS Church Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE - ORGANIZATIONS (TENANTS)
+// ============================================
+
+model Organization {
+  id        String  @id @default(uuid())
+  name      String
+  subdomain String  @unique
+  logo      String?
+
+  // Subscription & Plan
+  planType           PlanType           @default(TRIAL)
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+  isActive           Boolean            @default(true)
+
+  // Settings
+  timezone String @default("America/New_York")
+  currency String @default("USD")
+  settings Json?
+
+  // Branding (for PREMIUM plan)
+  customDomain   String?
+  primaryColor   String?
+  secondaryColor String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users             User[]
+  members           Member[]
+  children          Child[]
+  donations         Donation[]
+  events            Event[]
+  media             Media[]
+  attendanceRecords AttendanceRecord[]
+  announcements     Announcement[]
+  groups            Group[]
+  subscriptions     Subscription[]
+  auditLogs         AuditLog[]
+
+  @@index([subdomain])
+  @@index([planType, isActive])
+  @@index([subscriptionStatus])
+}
+
+enum PlanType {
+  TRIAL
+  BASIC
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+// ============================================
+// CORE - USERS & AUTHENTICATION
+// ============================================
+
+model User {
+  id             String @id @default(uuid())
+  organizationId String
+
+  email        String   @unique
+  passwordHash String?
+  firstName    String
+  lastName     String
+  phone        String?
+  avatar       String?
+  role         UserRole
+  isActive     Boolean  @default(true)
+
+  // Email verification
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
+
+  // Auth providers
+  googleId String? @unique
+  appleId  String? @unique
+
+  // Session tracking
+  lastLoginAt DateTime?
+  loginCount  Int       @default(0)
+
+  // Password reset
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  member               Member?
+  donations            Donation[]
+  eventRegistrations   EventRegistration[]
+  children             Child[]
+  attendanceRecords    AttendanceRecord[]
+  createdAnnouncements Announcement[]
+  createdMedia         Media[]
+  createdGroups        Group[]
+  createdEvents        Event[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([role])
+  @@index([organizationId, role])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  PASTOR
+  USHER
+  MEMBER
+  PARENT
+}
+
+// ============================================
+// MEMBERS MANAGEMENT
+// ============================================
+
+model Member {
+  id             String  @id @default(uuid())
+  organizationId String
+  userId         String? @unique
+
+  // Personal info
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  dateOfBirth DateTime?
+  gender      Gender?
+  address     Json?
+  photo       String?
+
+  // Church-specific
+  membershipStatus MembershipStatus @default(VISITOR)
+  joinedDate       DateTime?
+  baptismDate      DateTime?
+  maritalStatus    MaritalStatus?
+  occupation       String?
+
+  // Custom fields per church
+  customFields Json?
+
+  // Emergency contact
+  emergencyContact Json?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id])
+
+  // Relations
+  attendanceRecords AttendanceRecord[]
+  groupMemberships  GroupMembership[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([organizationId, membershipStatus])
+  @@index([organizationId, deletedAt])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MembershipStatus {
+  VISITOR
+  NEW_MEMBER
+  ACTIVE_MEMBER
+  INACTIVE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+// ============================================
+// CHILDREN & TEENS MANAGEMENT
+// ============================================
+
+model Child {
+  id             String @id @default(uuid())
+  organizationId String
+  parentId       String
+
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  gender      Gender
+  photo       String?
+  ageGroup    AgeGroup
+
+  // Medical/emergency info
+  allergies        String?
+  medicalNotes     String?
+  emergencyContact Json?
+
+  parent       User         @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  attendanceRecords  AttendanceRecord[]
+  eventRegistrations EventRegistration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([parentId])
+  @@index([organizationId, ageGroup])
+}
+
+enum AgeGroup {
+  CHILDREN_0_12
+  TEENS_13_18
+  YOUNG_ADULTS_19_25
+}
+
+// ============================================
+// GIVING MANAGEMENT
+// ============================================
+
+model Donation {
+  id             String  @id @default(uuid())
+  organizationId String
+  userId         String?
+
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD")
+  donationType  DonationType
+  paymentMethod PaymentMethod
+
+  // Payment provider info
+  stripePaymentIntentId String?       @unique
+  stripeChargeId        String?
+  paymentStatus         PaymentStatus @default(PENDING)
+
+  // Donor info (for anonymous or non-users)
+  donorName  String?
+  donorEmail String?
+  donorPhone String?
+
+  // Receipt
+  receiptUrl    String?
+  receiptNumber String?   @unique
+  receiptSentAt DateTime?
+
+  // Metadata
+  notes       String?
+  isAnonymous Boolean @default(false)
+
+  // Recurring
+  isRecurring             Boolean   @default(false)
+  recurringSchedule       String?
+  stripeSubscriptionId    String?
+  nextRecurringDonationAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([organizationId, donationType])
+  @@index([organizationId, createdAt])
+  @@index([paymentStatus])
+}
+
+enum DonationType {
+  TITHE
+  OFFERING
+  BUILDING_FUND
+  MISSIONS
+  PASTOR_APPRECIATION
+  BENEVOLENCE
+  SPECIAL_PROJECT
+  OTHER
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  CASH
+  CHECK
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+// ============================================
+// ATTENDANCE TRACKING
+// ============================================
+
+model AttendanceRecord {
+  id             String @id @default(uuid())
+  organizationId String
+
+  // Who attended
+  userId   String?
+  memberId String?
+  childId  String?
+
+  // Service details
+  eventId     String?
+  serviceType ServiceType
+  serviceDate DateTime
+
+  // Check-in details
+  checkInMethod CheckInMethod
+  checkInTime   DateTime      @default(now())
+  checkedInBy   String?
+
+  // QR code tracking
+  qrCode String?
+
+  // Offline sync
+  syncedAt   DateTime?
+  wasOffline Boolean   @default(false)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id])
+  member       Member?      @relation(fields: [memberId], references: [id])
+  child        Child?       @relation(fields: [childId], references: [id])
+  event        Event?       @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, serviceDate])
+  @@index([organizationId, serviceType])
+  @@index([userId])
+  @@index([memberId])
+  @@index([childId])
+  @@index([eventId])
+}
+
+enum ServiceType {
+  SUNDAY_SERVICE
+  MIDWEEK_SERVICE
+  PRAYER_MEETING
+  BIBLE_STUDY
+  YOUTH_SERVICE
+  CHILDREN_CHURCH
+  SPECIAL_EVENT
+  OTHER
+}
+
+enum CheckInMethod {
+  QR_CODE
+  MANUAL
+  SELF_CHECKIN
+}
+
+// ============================================
+// EVENTS MANAGEMENT
+// ============================================
+
+model Event {
+  id             String @id @default(uuid())
+  organizationId String
+  createdBy      String
+
+  title       String
+  description String?   @db.Text
+  eventType   EventType
+
+  // Date & Time
+  startDate DateTime
+  endDate   DateTime
+  timezone  String?
+
+  // Location
+  location    String?
+  address     Json?
+  isVirtual   Boolean @default(false)
+  virtualLink String?
+
+  // Registration
+  requiresRegistration Boolean   @default(false)
+  maxAttendees         Int?
+  registrationDeadline DateTime?
+  registrationFee      Decimal?  @db.Decimal(10, 2)
+
+  // Media
+  coverImage String?
+
+  // QR Code for entry
+  qrCode String? @unique
+
+  // Visibility
+  isPublic        Boolean    @default(true)
+  targetAgeGroups AgeGroup[]
+  targetRoles     UserRole[]
+
+  // Status
+  status EventStatus @default(DRAFT)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator      User         @relation(fields: [createdBy], references: [id])
+
+  // Relations
+  registrations     EventRegistration[]
+  media             Media[]
+  attendanceRecords AttendanceRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, startDate])
+  @@index([organizationId, eventType])
+  @@index([organizationId, status])
+  @@index([createdBy])
+}
+
+enum EventType {
+  SERVICE
+  CONFERENCE
+  RETREAT
+  OUTREACH
+  SOCIAL
+  TRAINING
+  FUNDRAISER
+  WEDDING
+  FUNERAL
+  OTHER
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELED
+  COMPLETED
+}
+
+model EventRegistration {
+  id      String  @id @default(uuid())
+  eventId String
+  userId  String?
+  childId String?
+
+  // Guest registration (non-users)
+  guestName  String?
+  guestEmail String?
+  guestPhone String?
+
+  // Payment (if event has fee)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentAmount   Decimal?      @db.Decimal(10, 2)
+  stripePaymentId String?
+
+  registeredAt DateTime  @default(now())
+  attended     Boolean   @default(false)
+  checkedInAt  DateTime?
+
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id])
+  child Child? @relation(fields: [childId], references: [id])
+
+  @@unique([eventId, userId])
+  @@unique([eventId, childId])
+  @@unique([eventId, guestEmail])
+  @@index([eventId])
+  @@index([userId])
+}
+
+// ============================================
+// MEDIA GALLERY
+// ============================================
+
+model Media {
+  id             String @id @default(uuid())
+  organizationId String
+  uploadedBy     String
+
+  title       String?
+  description String?
+  mediaType   MediaType
+
+  // Cloudinary details
+  url          String
+  cloudinaryId String  @unique
+  thumbnailUrl String?
+  publicId     String
+
+  // Metadata
+  fileSize Int?
+  mimeType String?
+  duration Int?
+  width    Int?
+  height   Int?
+
+  // Categorization
+  category        MediaCategory
+  eventId         String?
+  isChildrenMedia Boolean       @default(false)
+
+  // Visibility
+  isPublic Boolean  @default(true)
+  tags     String[]
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploader     User         @relation(fields: [uploadedBy], references: [id])
+  event        Event?       @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, category])
+  @@index([organizationId, isChildrenMedia])
+  @@index([eventId])
+  @@index([uploadedBy])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+enum MediaCategory {
+  SERMON
+  EVENT
+  CHILDREN_MINISTRY
+  YOUTH
+  WORSHIP
+  TESTIMONY
+  ANNOUNCEMENT
+  GALLERY
+  OTHER
+}
+
+// ============================================
+// COMMUNICATION & ANNOUNCEMENTS
+// ============================================
+
+model Announcement {
+  id             String @id @default(uuid())
+  organizationId String
+  createdBy      String
+
+  title    String
+  content  String   @db.Text
+  priority Priority @default(NORMAL)
+
+  // Targeting
+  targetRoles     UserRole[]
+  targetAgeGroups AgeGroup[]
+  sendToAll       Boolean    @default(false)
+
+  // Delivery channels
+  sendPushNotification Boolean @default(true)
+  sendEmail            Boolean @default(false)
+  sendSMS              Boolean @default(false)
+
+  // Scheduling
+  publishAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  // Status
+  status AnnouncementStatus @default(DRAFT)
+  sentAt DateTime?
+
+  // Stats
+  recipientCount Int @default(0)
+  openCount      Int @default(0)
+  clickCount     Int @default(0)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator      User         @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, publishAt])
+  @@index([organizationId, status])
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  CANCELED
+}
+
+// ============================================
+// GROUPS (Small Groups, Ministries)
+// ============================================
+
+model Group {
+  id             String @id @default(uuid())
+  organizationId String
+  createdBy      String
+
+  name        String
+  description String?   @db.Text
+  groupType   GroupType
+  leaderId    String?
+
+  meetingSchedule String?
+  meetingDay      String?
+  meetingTime     String?
+  location        String?
+  virtualLink     String?
+
+  maxMembers Int?
+  isActive   Boolean @default(true)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator      User         @relation(fields: [createdBy], references: [id])
+
+  // Relations
+  memberships GroupMembership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, groupType])
+  @@index([organizationId, isActive])
+}
+
+enum GroupType {
+  SMALL_GROUP
+  MINISTRY
+  COMMITTEE
+  CHOIR
+  VOLUNTEER_TEAM
+  YOUTH_GROUP
+  CHILDREN_MINISTRY
+  MENS_GROUP
+  WOMENS_GROUP
+  PRAYER_GROUP
+}
+
+model GroupMembership {
+  id       String @id @default(uuid())
+  groupId  String
+  memberId String
+
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  isActive Boolean   @default(true)
+
+  group  Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, memberId])
+  @@index([groupId])
+  @@index([memberId])
+}
+
+enum GroupRole {
+  LEADER
+  CO_LEADER
+  MEMBER
+}
+
+// ============================================
+// SUBSCRIPTIONS (SaaS)
+// ============================================
+
+model Subscription {
+  id             String @id @default(uuid())
+  organizationId String
+
+  planType PlanType
+  status   SubscriptionStatus
+
+  // Billing
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  billingCycle BillingCycle
+  amount       Decimal      @db.Decimal(10, 2)
+  currency     String       @default("USD")
+
+  // Dates
+  startDate          DateTime
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAt           DateTime?
+  canceledAt         DateTime?
+
+  // Trial
+  trialStart DateTime?
+  trialEnd   DateTime?
+
+  // Referrals
+  referralCode String? @unique
+  referredBy   String?
+
+  // Cancellation
+  cancelReason String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([planType])
+  @@index([stripeCustomerId])
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// ============================================
+// AUDIT LOGS
+// ============================================
+
+model AuditLog {
+  id             String  @id @default(uuid())
+  organizationId String
+  userId         String?
+
+  action     String
+  entityType String
+  entityId   String
+
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, action])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+}
