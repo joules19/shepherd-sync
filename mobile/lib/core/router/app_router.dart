@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shepherd_sync_mobile/features/dashboard/presentation/screens/dashboard_screen.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -9,6 +8,8 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/providers/onboarding_provider.dart';
+import '../../features/dashboard/presentation/screens/main_screen.dart';
+import '../../features/members/presentation/screens/members_list_screen.dart';
 import '../constants/app_routes.dart';
 import '../widgets/custom_button.dart';
 import 'router_notifier.dart';
@@ -168,11 +169,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Dashboard (placeholder for now)
+      // Main screen with bottom navigation (Dashboard, Events, Give, Profile)
       GoRoute(
         path: AppRoutes.dashboard,
         name: 'dashboard',
-        builder: (context, state) => const DashboardScreen(),
+        builder: (context, state) => const MainScreen(),
       ),
 
       // Events (placeholder)
@@ -197,6 +198,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'profile',
         builder: (context, state) =>
             const Scaffold(body: Center(child: Text('Profile - Coming Soon'))),
+      ),
+
+      // Members Management (Admin/Pastor)
+      GoRoute(
+        path: AppRoutes.members,
+        name: 'members',
+        builder: (context, state) => const MembersListScreen(),
       ),
     ],
 

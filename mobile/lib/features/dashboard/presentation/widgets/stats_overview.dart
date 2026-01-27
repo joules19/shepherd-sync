@@ -19,20 +19,26 @@ class StatsOverview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header
-        Text(
-          'Overview',
-          style: AppTextStyles.headlineMedium.copyWith(
-            fontWeight: FontWeight.bold,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
+          child: Text(
+            'Overview',
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
 
         const SizedBox(height: AppConstants.spacingMD),
 
-        // Stats cards
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
+        // Horizontal scrollable stats
+        SizedBox(
+          height: 100,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
+            scrollDirection: Axis.horizontal,
+            children: [
+              _StatCard(
                 title: 'Giving',
                 value: '\$${(stats.giving.totalThisMonth / 1000).toStringAsFixed(1)}K',
                 subtitle: 'This month',
@@ -40,10 +46,8 @@ class StatsOverview extends StatelessWidget {
                 color: AppColors.success,
                 percentageChange: stats.giving.percentageChange,
               ),
-            ),
-            const SizedBox(width: AppConstants.spacingMD),
-            Expanded(
-              child: _StatCard(
+              const SizedBox(width: AppConstants.spacingSM),
+              _StatCard(
                 title: 'Attendance',
                 value: '${stats.attendance.totalThisWeek}',
                 subtitle: 'This week',
@@ -51,16 +55,8 @@ class StatsOverview extends StatelessWidget {
                 color: AppColors.info,
                 percentageChange: stats.attendance.percentageChange,
               ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppConstants.spacingMD),
-
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
+              const SizedBox(width: AppConstants.spacingSM),
+              _StatCard(
                 title: 'Events',
                 value: '${stats.events.upcomingEvents}',
                 subtitle: 'Upcoming',
@@ -68,10 +64,8 @@ class StatsOverview extends StatelessWidget {
                 color: AppColors.warning,
                 percentageChange: null,
               ),
-            ),
-            const SizedBox(width: AppConstants.spacingMD),
-            Expanded(
-              child: _StatCard(
+              const SizedBox(width: AppConstants.spacingSM),
+              _StatCard(
                 title: 'Members',
                 value: '${stats.members.totalMembers}',
                 subtitle: 'Total active',
@@ -79,8 +73,8 @@ class StatsOverview extends StatelessWidget {
                 color: AppColors.primary,
                 percentageChange: stats.members.growthRate,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -110,58 +104,62 @@ class _StatCard extends StatelessWidget {
     final isPositive = (percentageChange ?? 0) >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(AppConstants.spacingMD),
+      width: 140,
+      padding: const EdgeInsets.all(AppConstants.spacingSM),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Icon and title row
+          // Icon and title
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(AppConstants.spacingSM),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
                   color: color,
-                  size: 20,
+                  size: 16,
                 ),
               ),
-              const SizedBox(width: AppConstants.spacingSM),
-              Text(
-                title,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: AppConstants.spacingMD),
+          const SizedBox(height: AppConstants.spacingSM),
 
           // Value
           Text(
             value,
-            style: AppTextStyles.displaySmall.copyWith(
+            style: AppTextStyles.headlineLarge.copyWith(
               fontWeight: FontWeight.bold,
+              height: 1.1,
             ),
           ),
-
-          const SizedBox(height: AppConstants.spacingXS),
 
           // Subtitle and percentage
           Row(
@@ -171,23 +169,27 @@ class _StatCard extends StatelessWidget {
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.grey[500],
+                    fontSize: 10,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (percentageChange != null) ...[
+                const SizedBox(width: 2),
                 Icon(
                   isPositive
                       ? Icons.trending_up_rounded
                       : Icons.trending_down_rounded,
                   color: isPositive ? AppColors.success : AppColors.error,
-                  size: 16,
+                  size: 12,
                 ),
-                const SizedBox(width: 2),
                 Text(
-                  '${percentageChange!.abs().toStringAsFixed(1)}%',
+                  '${percentageChange!.abs().toStringAsFixed(0)}%',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: isPositive ? AppColors.success : AppColors.error,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
                   ),
                 ),
               ],

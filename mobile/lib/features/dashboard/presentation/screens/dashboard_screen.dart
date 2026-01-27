@@ -5,7 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_routes.dart';
-import '../../../../core/widgets/floating_nav_bar.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../onboarding/presentation/providers/onboarding_provider.dart';
 import '../../data/models/quick_action.dart';
@@ -17,7 +16,7 @@ import '../widgets/stats_overview.dart';
 import '../widgets/announcements_carousel.dart';
 import '../widgets/upcoming_events_section.dart';
 
-/// Exceptional dashboard screen with floating nav bar and premium UI
+/// Dashboard content screen (without nav bar)
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -29,7 +28,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  int _currentNavIndex = 0;
   bool _isRefreshing = false;
 
   @override
@@ -231,222 +229,297 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      body: Stack(
-        children: [
-          // Main content with RefreshIndicator
-          RefreshIndicator(
-            onRefresh: _handleRefresh,
-            color: AppColors.primary,
-            child: CustomScrollView(
-              slivers: [
-                // App Bar
-                SliverAppBar(
-                  expandedHeight: 200,
-                  floating: false,
-                  pinned: true,
-                  backgroundColor: AppColors.primary,
-                  actions: [
-                    // Settings/Logout Menu
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      onSelected: (value) async {
-                        if (value == 'logout') {
-                          await _handleLogout();
-                        } else if (value == 'reset_onboarding') {
-                          await _handleResetOnboarding();
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'logout',
-                          child: Row(
-                            children: [
-                              Icon(Icons.logout, size: 20),
-                              SizedBox(width: 12),
-                              Text('Logout'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'reset_onboarding',
-                          child: Row(
-                            children: [
-                              Icon(Icons.refresh, size: 20),
-                              SizedBox(width: 12),
-                              Text('Reset Onboarding (Test)'),
-                            ],
-                          ),
-                        ),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: AppColors.primary,
+        child: CustomScrollView(
+          slivers: [
+            // Modern Compact App Bar
+            SliverAppBar(
+              expandedHeight: 120,
+              floating: true,
+              pinned: true,
+              snap: true,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primary.withValues(alpha: 0.8),
                       ],
                     ),
-                  ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF713784), Color(0xFF8B5CF6)],
-                        ),
+                  ),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                        vertical: AppConstants.spacingSM,
                       ),
-                      child: SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppConstants.spacingLG),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              // Greeting
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Text(
-                                  _getGreeting(),
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // Top Row: Avatar, Greeting/Name, Actions
+                          FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Row(
+                              children: [
+                                // Profile Avatar with gradient border
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white.withValues(alpha: 0.3),
+                                        Colors.white.withValues(alpha: 0.1),
+                                      ],
+                                    ),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: Colors.white.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    backgroundImage: user.profilePicture != null
+                                        ? NetworkImage(user.profilePicture!)
+                                        : null,
+                                    child: user.profilePicture == null
+                                        ? Text(
+                                            '${user.firstName[0]}${user.lastName[0]}',
+                                            style: AppTextStyles.bodyLarge
+                                                .copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          )
+                                        : null,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: AppConstants.spacingXS),
-                              // User name
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Text(
-                                  '${user.firstName} ${user.lastName}',
-                                  style: AppTextStyles.displayMedium.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: AppConstants.spacingXS),
-                              // Organization
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Row(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/shepherdsync-high-resolution-logo.png',
-                                      width: 16,
-                                      height: 16,
-                                      fit: BoxFit.contain,
-                                    ),
-                                    const SizedBox(
-                                      width: AppConstants.spacingXS,
-                                    ),
-                                    Text(
-                                      organization?.name ?? '',
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
+                                const SizedBox(width: AppConstants.spacingSM),
+                                // Greeting and Name
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _getGreeting(),
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.85,
+                                          ),
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 11,
                                         ),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        '${user.firstName} ${user.lastName}',
+                                        style: AppTextStyles.headlineMedium
+                                            .copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              height: 1.1,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Notification Icon
+                                IconButton(
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(),
+                                  onPressed: () {
+                                    // TODO: Navigate to notifications
+                                  },
+                                  icon: Stack(
+                                    children: [
+                                      const Icon(
+                                        Icons.notifications_outlined,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                      // Badge indicator
+                                      Positioned(
+                                        right: 0,
+                                        top: 0,
+                                        child: Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.secondary,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppColors.primary,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Menu
+                                PopupMenuButton<String>(
+                                  padding: const EdgeInsets.all(8),
+                                  icon: const Icon(
+                                    Icons.more_vert_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  offset: const Offset(0, 50),
+                                  onSelected: (value) async {
+                                    if (value == 'logout') {
+                                      await _handleLogout();
+                                    } else if (value == 'reset_onboarding') {
+                                      await _handleResetOnboarding();
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'logout',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.logout_rounded, size: 20),
+                                          SizedBox(width: 12),
+                                          Text('Logout'),
+                                        ],
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'reset_onboarding',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.refresh_rounded, size: 20),
+                                          SizedBox(width: 12),
+                                          Text('Reset Onboarding'),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          // Organization badge - subtle and compact
+                          FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Image.asset(
+                                        'assets/images/shepherdsync-high-resolution-logo.png',
+                                        width: 30,
+                                        height: 30,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        organization?.name ?? '',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.9,
+                                          ),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-
-                // Content
-                SliverPadding(
-                  padding: const EdgeInsets.only(
-                    top: AppConstants.spacingLG,
-                    bottom: 100, // Space for floating nav bar
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Quick Actions
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spacingLG,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Quick Actions',
-                              style: AppTextStyles.headlineMedium.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: AppConstants.spacingXS),
-                            QuickActionGrid(actions: quickActions),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: AppConstants.spacingXL),
-
-                      // Statistics Overview
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spacingLG,
-                        ),
-                        child: StatsOverview(stats: mockStats),
-                      ),
-
-                      const SizedBox(height: AppConstants.spacingXL),
-
-                      // Announcements Carousel
-                      AnnouncementsCarousel(announcements: mockAnnouncements),
-
-                      const SizedBox(height: AppConstants.spacingXL),
-
-                      // Upcoming Events
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spacingLG,
-                        ),
-                        child: UpcomingEventsSection(events: mockEvents),
-                      ),
-                    ]),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
 
-          // Floating Navigation Bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: FloatingNavBar(
-              currentIndex: _currentNavIndex,
-              onTap: (index) {
-                setState(() => _currentNavIndex = index);
-                // TODO: Handle navigation
-              },
-              items: const [
-                FloatingNavBarItem(
-                  label: 'Home',
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home_rounded,
-                ),
-                FloatingNavBarItem(
-                  label: 'Events',
-                  icon: Icons.event_outlined,
-                  activeIcon: Icons.event_rounded,
-                ),
-                FloatingNavBarItem(
-                  label: 'Give',
-                  icon: Icons.volunteer_activism_outlined,
-                  activeIcon: Icons.volunteer_activism_rounded,
-                ),
-                FloatingNavBarItem(
-                  label: 'Profile',
-                  icon: Icons.person_outlined,
-                  activeIcon: Icons.person_rounded,
-                ),
-              ],
+            // Content
+            SliverPadding(
+              padding: const EdgeInsets.only(
+                top: AppConstants.spacingLG,
+                bottom: 100, // Space for floating nav bar
+              ),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // Quick Actions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingLG,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Quick Actions',
+                          style: AppTextStyles.headlineMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingSM),
+                        QuickActionGrid(actions: quickActions),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppConstants.spacingLG),
+
+                  // Statistics Overview (handles its own padding)
+                  StatsOverview(stats: mockStats),
+
+                  const SizedBox(height: AppConstants.spacingLG),
+
+                  // Announcements Carousel (handles its own padding)
+                  AnnouncementsCarousel(announcements: mockAnnouncements),
+
+                  const SizedBox(height: AppConstants.spacingLG),
+
+                  // Upcoming Events
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingLG,
+                    ),
+                    child: UpcomingEventsSection(events: mockEvents),
+                  ),
+                ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

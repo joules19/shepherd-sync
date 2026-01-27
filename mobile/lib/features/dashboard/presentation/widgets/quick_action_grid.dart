@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../data/models/quick_action.dart';
@@ -12,6 +13,12 @@ class QuickActionGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      padding: EdgeInsets.fromLTRB(
+        0,
+        AppConstants.spacingMD,
+        0,
+        AppConstants.spacingMD,
+      ),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -51,10 +58,7 @@ class QuickActionCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to action.route
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Navigate to ${action.route}')),
-            );
+            context.go(action.route);
           },
           borderRadius: BorderRadius.circular(20),
           child: Container(

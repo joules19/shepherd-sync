@@ -37,8 +37,8 @@ class DioClient {
   /// Setup interceptors for auth, logging, and error handling
   void _setupInterceptors() {
     _dio.interceptors.addAll([
-      // Auth interceptor - adds JWT token to requests
-      AuthInterceptor(_secureStorage),
+      // Auth interceptor - adds JWT token to requests and handles refresh
+      AuthInterceptor(_secureStorage, _dio),
 
       // Pretty logging (only in debug mode)
       if (const bool.fromEnvironment('dart.vm.product') == false)

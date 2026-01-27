@@ -51,11 +51,11 @@ class AnnouncementsCarousel extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: AppConstants.spacingMD),
+        const SizedBox(height: AppConstants.spacingSM),
 
-        // Carousel
+        // Carousel - More compact
         SizedBox(
-          height: 160,
+          height: 110,
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
             scrollDirection: Axis.horizontal,
@@ -64,7 +64,7 @@ class AnnouncementsCarousel extends StatelessWidget {
               return Padding(
                 padding: EdgeInsets.only(
                   right: index < announcements.length - 1
-                      ? AppConstants.spacingMD
+                      ? AppConstants.spacingSM
                       : 0,
                 ),
                 child: AnnouncementCard(announcement: announcements[index]),
@@ -108,112 +108,109 @@ class AnnouncementCard extends StatelessWidget {
         onTap: () {
           // TODO: Navigate to announcement detail
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 280,
+          width: 240,
+          padding: const EdgeInsets.all(AppConstants.spacingSM),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
                 categoryColor,
-                categoryColor.withValues(alpha: 0.8),
+                categoryColor.withValues(alpha: 0.85),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: categoryColor.withValues(alpha: 0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 6),
+                color: categoryColor.withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Background pattern
-              Positioned(
-                right: -20,
-                bottom: -20,
-                child: Icon(
-                  Icons.campaign_rounded,
-                  size: 120,
-                  color: Colors.white.withValues(alpha: 0.1),
+              // Category badge and icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      announcement.category.toUpperCase(),
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.campaign_rounded,
+                    size: 20,
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppConstants.spacingSM),
+
+              // Title
+              Text(
+                announcement.title,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: 4),
+
+              // Message
+              Expanded(
+                child: Text(
+                  announcement.message,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 11,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
 
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Category badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingSM,
-                        vertical: AppConstants.spacingXS,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        announcement.category.toUpperCase(),
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+              const SizedBox(height: AppConstants.spacingXS),
+
+              // Date
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 12,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateFormat('MMM d, h:mm a').format(announcement.createdAt),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: 10,
                     ),
-
-                    const Spacer(),
-
-                    // Title
-                    Text(
-                      announcement.title,
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: AppConstants.spacingXS),
-
-                    // Message
-                    Text(
-                      announcement.message,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: AppConstants.spacingSM),
-
-                    // Date
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 14,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('MMM d, h:mm a').format(announcement.createdAt),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),

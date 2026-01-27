@@ -81,26 +81,26 @@ class EventCard extends StatelessWidget {
         onTap: () {
           // TODO: Navigate to event detail
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.all(AppConstants.spacingMD),
+          padding: const EdgeInsets.all(AppConstants.spacingSM),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Row(
             children: [
-              // Date badge
+              // Date badge - more compact
               Container(
-                width: 60,
-                height: 60,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -110,16 +110,17 @@ class EventCard extends StatelessWidget {
                       Color(0xFF8B5CF6),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       dateFormat.format(event.startDate).split(' ')[1],
-                      style: AppTextStyles.headlineMedium.copyWith(
+                      style: AppTextStyles.headlineSmall.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
                     ),
                     Text(
@@ -127,6 +128,7 @@ class EventCard extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w600,
+                        fontSize: 9,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -134,52 +136,75 @@ class EventCard extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(width: AppConstants.spacingMD),
+              const SizedBox(width: AppConstants.spacingSM),
 
               // Event details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
-                    Text(
-                      event.title,
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // Title and status
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            event.title,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (event.isRegistered) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.success,
+                              size: 14,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
 
-                    const SizedBox(height: AppConstants.spacingXS),
+                    const SizedBox(height: 4),
 
-                    // Time and location
+                    // Time and location - compact
                     Row(
                       children: [
                         Icon(
                           Icons.access_time_rounded,
-                          size: 14,
-                          color: Colors.grey[600],
+                          size: 12,
+                          color: Colors.grey[500],
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Text(
                           timeFormat.format(event.startDate),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: Colors.grey[600],
+                            fontSize: 11,
                           ),
                         ),
-                        const SizedBox(width: AppConstants.spacingSM),
+                        const SizedBox(width: 8),
                         Icon(
                           Icons.location_on_rounded,
-                          size: 14,
-                          color: Colors.grey[600],
+                          size: 12,
+                          color: Colors.grey[500],
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Expanded(
                           child: Text(
                             event.location,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.grey[600],
+                              fontSize: 11,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -188,30 +213,31 @@ class EventCard extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: AppConstants.spacingSM),
+                    const SizedBox(height: 6),
 
-                    // Registration progress
+                    // Registration progress - thinner
                     Row(
                       children: [
                         Expanded(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(
                               value: percentFilled / 100,
                               backgroundColor: Colors.grey[200],
                               color: percentFilled > 80
                                   ? AppColors.error
                                   : AppColors.primary,
-                              minHeight: 6,
+                              minHeight: 4,
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppConstants.spacingSM),
+                        const SizedBox(width: 6),
                         Text(
                           '${event.registeredCount}/${event.maxCapacity}',
                           style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Colors.grey[700],
+                            fontSize: 10,
                           ),
                         ),
                       ],
@@ -219,21 +245,6 @@ class EventCard extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // Registration status
-              if (event.isRegistered)
-                Container(
-                  padding: const EdgeInsets.all(AppConstants.spacingSM),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.success,
-                    size: 20,
-                  ),
-                ),
             ],
           ),
         ),
