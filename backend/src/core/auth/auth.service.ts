@@ -2,12 +2,16 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@/core/database/prisma.service';
+import { CloudinaryService } from '@/core/upload/cloudinary.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { CompleteInviteDto } from '@/modules/members/dto/complete-invite.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRole, PlanType, SubscriptionStatus } from '@prisma/client';
 
@@ -17,7 +21,8 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+    private cloudinaryService: CloudinaryService,
+  ) { }
 
   async register(registerDto: RegisterDto) {
     // Check if email already exists
@@ -80,6 +85,9 @@ export class AuthService {
           lastName: true,
           role: true,
           organizationId: true,
+          avatar: true,
+          phone: true,
+          phoneCountryCode: true,
         },
       });
 
@@ -118,6 +126,14 @@ export class AuthService {
           },
         },
       },
+    });
+
+    console.log('[LOGIN] User from DB:', {
+      id: user?.id,
+      email: user?.email,
+      avatar: user?.avatar,
+      phone: user?.phone,
+      phoneCountryCode: user?.phoneCountryCode,
     });
 
     if (!user) {
@@ -165,7 +181,7 @@ export class AuthService {
       organizationId: user.organizationId,
     });
 
-    return {
+    const response = {
       user: {
         id: user.id,
         email: user.email,
@@ -173,10 +189,18 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         organizationId: user.organizationId,
+        avatar: user.avatar,
+        phone: user.phone,
+        phoneCountryCode: user.phoneCountryCode,
       },
       organization: user.organization,
       ...tokens,
     };
+
+    console.log('[LOGIN] Returning user with avatar:', user.avatar ? 'YES' : 'NO');
+    console.log('[LOGIN] Avatar URL:', user.avatar);
+
+    return response;
   }
 
   async refreshToken(refreshToken: string) {
@@ -250,7 +274,21 @@ export class AuthService {
         lastName: true,
         role: true,
         organizationId: true,
+        avatar: true,
+        phone: true,
+        phoneCountryCode: true,
         isActive: true,
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            subdomain: true,
+            planType: true,
+            logo: true,
+            isActive: true,
+            subscriptionStatus: true,
+          },
+        },
       },
     });
 
@@ -259,5 +297,244 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  /**
+   * Validate invite token or code and return member details
+   */
+  async validateInvite(tokenOrCode: string) {
+    // Find invite by token (long) or inviteCode (6-digit)
+    // Try by token first (unique constraint)
+    let inviteToken = await this.prisma.inviteToken.findUnique({
+      where: { token: tokenOrCode },
+      include: {
+        member: {
+          include: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                logo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // If not found by token, try by inviteCode
+    if (!inviteToken) {
+      inviteToken = await this.prisma.inviteToken.findFirst({
+        where: {
+          inviteCode: tokenOrCode.toUpperCase(),
+          isValid: true,
+        },
+        include: {
+          member: {
+            include: {
+              organization: {
+                select: {
+                  id: true,
+                  name: true,
+                  logo: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    if (!inviteToken) {
+      throw new BadRequestException('Invalid invite code or token');
+    }
+
+    if (!inviteToken.isValid) {
+      throw new BadRequestException('Invite token has been used or invalidated');
+    }
+
+    if (new Date() > inviteToken.expiresAt) {
+      throw new BadRequestException('Invite token has expired');
+    }
+
+    if (inviteToken.member.userId) {
+      throw new BadRequestException('Member already has an active account');
+    }
+
+    return {
+      valid: true,
+      member: {
+        firstName: inviteToken.member.firstName,
+        lastName: inviteToken.member.lastName,
+        email: inviteToken.member.email,
+        phone: inviteToken.member.phone,
+        phoneCountryCode: inviteToken.member.phoneCountryCode,
+        photo: inviteToken.member.photo,
+        organizationName: inviteToken.member.organization.name,
+        organizationLogo: inviteToken.member.organization.logo,
+      },
+      expiresAt: inviteToken.expiresAt,
+    };
+  }
+
+  /**
+   * Complete invite and create user account
+   */
+  async completeInvite(completeInviteDto: CompleteInviteDto) {
+    // Validate invite token
+    const inviteToken = await this.prisma.inviteToken.findUnique({
+      where: { inviteCode: completeInviteDto.token },
+      include: {
+        member: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    });
+
+    if (!inviteToken) {
+      throw new BadRequestException('Invalid invite token');
+    }
+
+    if (!inviteToken.isValid) {
+      throw new BadRequestException('Invite token has been used or invalidated');
+    }
+
+    if (new Date() > inviteToken.expiresAt) {
+      throw new BadRequestException('Invite token has expired');
+    }
+
+    if (inviteToken.member.userId) {
+      throw new BadRequestException('Member already has an active account');
+    }
+
+    const member = inviteToken.member;
+
+    // Check if one of password, googleIdToken, or appleAuthCode is provided
+    if (!completeInviteDto.password && !completeInviteDto.googleIdToken && !completeInviteDto.appleAuthCode) {
+      throw new BadRequestException('Password or OAuth provider is required');
+    }
+
+    // Hash password if provided
+    let passwordHash: string | undefined;
+    let googleId: string | undefined;
+    let appleId: string | undefined;
+
+    if (completeInviteDto.password) {
+      passwordHash = await bcrypt.hash(completeInviteDto.password, 10);
+    }
+
+    if (completeInviteDto.googleIdToken) {
+      // TODO: Verify Google ID token
+      googleId = 'google-' + member.email;
+    }
+
+    if (completeInviteDto.appleAuthCode) {
+      // TODO: Verify Apple auth code
+      appleId = 'apple-' + member.email;
+    }
+
+    // Create user and link to member
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Create user account
+      const user = await tx.user.create({
+        data: {
+          organizationId: member.organizationId,
+          email: member.email!,
+          passwordHash,
+          googleId,
+          appleId,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          phone: member.phone,
+          phoneCountryCode: member.phoneCountryCode,
+          avatar: completeInviteDto.profilePhotoBase64
+            ? await this.uploadProfilePhoto(
+                completeInviteDto.profilePhotoBase64,
+                member.organizationId,
+              )
+            : member.photo,
+          role: UserRole.MEMBER,
+          emailVerified: true, // Auto-verify since they came from invite
+          isActive: true,
+          lastLoginAt: new Date(),
+          loginCount: 1,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          organizationId: true,
+          avatar: true,
+        },
+      });
+
+      // Link user to member
+      await tx.member.update({
+        where: { id: member.id },
+        data: {
+          userId: user.id,
+          inviteStatus: 'ACTIVE',
+          activatedAt: new Date(),
+          photo: user.avatar || member.photo,
+        },
+      });
+
+      // Mark invite token as used
+      await tx.inviteToken.update({
+        where: { id: inviteToken.id },
+        data: {
+          isValid: false,
+          usedAt: new Date(),
+        },
+      });
+
+      return user;
+    });
+
+    // Generate tokens
+    const tokens = await this.generateTokens(result);
+
+    return {
+      user: result,
+      organization: {
+        id: member.organization.id,
+        name: member.organization.name,
+        subdomain: member.organization.subdomain,
+        planType: member.organization.planType,
+        subscriptionStatus: member.organization.subscriptionStatus,
+        isActive: member.organization.isActive,
+      },
+      member: {
+        id: member.id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+      },
+      ...tokens,
+    };
+  }
+
+  /**
+   * Upload profile photo to Cloudinary
+   */
+  private async uploadProfilePhoto(
+    base64: string,
+    organizationId: string,
+  ): Promise<string> {
+    try {
+      const cloudinaryUrl = await this.cloudinaryService.uploadBase64(
+        base64,
+        'profile-pictures',
+        organizationId,
+      );
+      return cloudinaryUrl;
+    } catch (error) {
+      console.error('[UPLOAD] Failed to upload profile photo to Cloudinary:', error);
+      // Fallback to base64 if Cloudinary fails (though this is not ideal)
+      return base64;
+    }
   }
 }

@@ -1,10 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:intl_phone_field/phone_number.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/custom_dropdown.dart';
+import '../../../../core/widgets/profile_picture_picker.dart';
+import '../../../../core/widgets/custom_phone_field.dart';
 import '../../data/providers/members_providers.dart';
 
 /// Member form screen for creating/editing members
@@ -25,7 +32,6 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _occupationController = TextEditingController();
   final _dateOfBirthController = TextEditingController();
   final _joinedDateController = TextEditingController();
@@ -35,16 +41,55 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
   final _stateController = TextEditingController();
   final _zipController = TextEditingController();
   final _emergencyNameController = TextEditingController();
-  final _emergencyPhoneController = TextEditingController();
   final _emergencyRelationshipController = TextEditingController();
 
   bool _isLoading = false;
+  File? _profileImage;
+  String? _profileImageUrl;
   String? _selectedGender;
   String? _selectedMembershipStatus;
   String? _selectedMaritalStatus;
+  String? _phoneCountryCode;
+  String? _phoneNumber;
+  String? _emergencyPhoneCountryCode;
+  String? _emergencyPhoneNumber;
   DateTime? _dateOfBirth;
   DateTime? _joinedDate;
   DateTime? _baptismDate;
+
+  /// Convert dial code (e.g., "+44", "+1") to ISO country code (e.g., "GB", "US")
+  String _getCountryCodeFromDialCode(String? dialCode) {
+    if (dialCode == null || dialCode.isEmpty) return 'US';
+
+    // Remove + and any extra characters
+    final cleanCode = dialCode.replaceAll('+', '').trim();
+
+    // Map common dial codes to ISO country codes
+    const dialToIso = {
+      '1': 'US',      // USA/Canada
+      '44': 'GB',     // UK
+      '234': 'NG',    // Nigeria
+      '91': 'IN',     // India
+      '61': 'AU',     // Australia
+      '86': 'CN',     // China
+      '81': 'JP',     // Japan
+      '82': 'KR',     // South Korea
+      '33': 'FR',     // France
+      '49': 'DE',     // Germany
+      '39': 'IT',     // Italy
+      '34': 'ES',     // Spain
+      '7': 'RU',      // Russia
+      '55': 'BR',     // Brazil
+      '52': 'MX',     // Mexico
+      '27': 'ZA',     // South Africa
+      '20': 'EG',     // Egypt
+      '254': 'KE',    // Kenya
+      '233': 'GH',    // Ghana
+      '256': 'UG',    // Uganda
+    };
+
+    return dialToIso[cleanCode] ?? 'US';
+  }
 
   @override
   void initState() {
@@ -72,7 +117,9 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
             _firstNameController.text = member.firstName;
             _lastNameController.text = member.lastName;
             _emailController.text = member.email ?? '';
-            _phoneController.text = member.phone ?? '';
+            _phoneCountryCode = member.phoneCountryCode ?? '+1';
+            _phoneNumber = member.phone;
+            _profileImageUrl = member.photo;
             _occupationController.text = member.occupation ?? '';
             _selectedGender = member.gender;
             _selectedMembershipStatus = member.membershipStatus;
@@ -80,15 +127,15 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
 
             if (member.dateOfBirth != null) {
               _dateOfBirth = DateTime.parse(member.dateOfBirth!);
-              _dateOfBirthController.text = member.dateOfBirth!;
+              _dateOfBirthController.text = _formatDate(_dateOfBirth);
             }
             if (member.joinedDate != null) {
               _joinedDate = DateTime.parse(member.joinedDate!);
-              _joinedDateController.text = member.joinedDate!;
+              _joinedDateController.text = _formatDate(_joinedDate);
             }
             if (member.baptismDate != null) {
               _baptismDate = DateTime.parse(member.baptismDate!);
-              _baptismDateController.text = member.baptismDate!;
+              _baptismDateController.text = _formatDate(_baptismDate);
             }
 
             if (member.address != null) {
@@ -103,8 +150,10 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                   member.emergencyContact!.name ?? '';
               _emergencyRelationshipController.text =
                   member.emergencyContact!.relationship ?? '';
-              _emergencyPhoneController.text =
-                  member.emergencyContact!.phone ?? '';
+              _emergencyPhoneCountryCode =
+                  member.emergencyContact!.phoneCountryCode ?? '+1';
+              _emergencyPhoneNumber =
+                  member.emergencyContact!.phone;
             }
           });
         }
@@ -117,7 +166,6 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _occupationController.dispose();
     _dateOfBirthController.dispose();
     _joinedDateController.dispose();
@@ -127,7 +175,6 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
     _stateController.dispose();
     _zipController.dispose();
     _emergencyNameController.dispose();
-    _emergencyPhoneController.dispose();
     _emergencyRelationshipController.dispose();
     super.dispose();
   }
@@ -150,7 +197,7 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return DateFormat('MMM d, y').format(date);
   }
 
   Future<void> _saveMember() async {
@@ -163,8 +210,12 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
       'lastName': _lastNameController.text.trim(),
       if (_emailController.text.isNotEmpty)
         'email': _emailController.text.trim(),
-      if (_phoneController.text.isNotEmpty)
-        'phone': _phoneController.text.trim(),
+      if (_phoneNumber != null && _phoneNumber!.isNotEmpty) ...{
+        'phoneCountryCode': _phoneCountryCode ?? '+1',
+        'phone': _phoneNumber,
+      },
+      if (_profileImageUrl != null) 'photo': _profileImageUrl,
+      // TODO: Upload _profileImage to backend if changed
       if (_selectedGender != null) 'gender': _selectedGender,
       if (_selectedMembershipStatus != null)
         'membershipStatus': _selectedMembershipStatus,
@@ -190,12 +241,15 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
           'country': 'USA',
         },
       if (_emergencyNameController.text.isNotEmpty ||
-          _emergencyPhoneController.text.isNotEmpty ||
+          _emergencyPhoneNumber != null ||
           _emergencyRelationshipController.text.isNotEmpty)
         'emergencyContact': {
           'name': _emergencyNameController.text.trim(),
           'relationship': _emergencyRelationshipController.text.trim(),
-          'phone': _emergencyPhoneController.text.trim(),
+          if (_emergencyPhoneNumber != null && _emergencyPhoneNumber!.isNotEmpty) ...{
+            'phoneCountryCode': _emergencyPhoneCountryCode ?? '+1',
+            'phone': _emergencyPhoneNumber,
+          },
         },
     };
 
@@ -241,28 +295,98 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
       child: Scaffold(
         backgroundColor: AppColors.backgroundLight,
         appBar: AppBar(
-          title: Text(widget.memberId == null ? 'Add Member' : 'Edit Member'),
+          title: Text(
+            widget.memberId == null ? 'Add Member' : 'Edit Member',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          elevation: 0,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(AppConstants.spacingMD),
+          padding: const EdgeInsets.all(AppConstants.spacingLG),
           children: [
-            // Basic info section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
+            // Profile picture picker
+            Center(
+              child: ProfilePicturePicker(
+                imageUrl: _profileImageUrl,
+                imageFile: _profileImage,
+                onImageSelected: (file) {
+                  setState(() {
+                    _profileImage = file;
+                  });
+                },
+                size: 120,
+              ),
+            ),
+
+            const SizedBox(height: AppConstants.spacingLG),
+
+            // Header with icon
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primary.withValues(alpha: 0.7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.person_add_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppConstants.spacingMD),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Basic Information',
-                      style: TextStyle(
-                        fontSize: 18,
+                    Text(
+                      widget.memberId == null ? 'New Member' : 'Edit Member',
+                      style: AppTextStyles.headlineSmall.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: AppConstants.spacingMD),
+                    Text(
+                      'Fill in the details below',
+                      style: AppTextStyles.caption.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppConstants.spacingLG),
+
+            // Basic info section - Contact info (name, email, phone)
+            _buildFormSection(
+              'Basic Information',
+              Icons.contacts_rounded,
+              Colors.blue, // Matches "Contact Information" in detail screen
+              [
 
                     // First name
                     CustomTextField(
@@ -312,49 +436,38 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
 
                     const SizedBox(height: AppConstants.spacingMD),
 
-                    // Phone
-                    CustomTextField(
-                      controller: _phoneController,
+                    // Phone with country code
+                    CustomPhoneField(
                       label: 'Phone',
                       hint: 'Enter phone number',
-                      keyboardType: TextInputType.phone,
+                      initialCountryCode: _getCountryCodeFromDialCode(_phoneCountryCode),
+                      initialValue: _phoneNumber,
+                      onChanged: (PhoneNumber phone) {
+                        setState(() {
+                          _phoneCountryCode = '+${phone.countryCode}';
+                          _phoneNumber = phone.number;
+                        });
+                      },
                     ),
-                  ],
-                ),
-              ),
+              ],
             ),
 
             const SizedBox(height: AppConstants.spacingMD),
 
-            // Membership info section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Membership Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppConstants.spacingMD),
-
+            // Membership info section - Personal info (gender, marital status)
+            _buildFormSection(
+              'Membership Details',
+              Icons.card_membership_rounded,
+              Colors.purple, // Matches "Personal Information" in detail screen
+              [
                     // Gender
-                    DropdownButtonFormField<String>(
+                    CustomDropdown<String>(
+                      label: 'Gender',
+                      hint: 'Select gender',
                       value: _selectedGender,
-                      decoration: const InputDecoration(
-                        labelText: 'Gender',
-                        border: OutlineInputBorder(),
-                      ),
                       items: const [
                         DropdownMenuItem(value: 'MALE', child: Text('Male')),
-                        DropdownMenuItem(
-                          value: 'FEMALE',
-                          child: Text('Female'),
-                        ),
+                        DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
                         DropdownMenuItem(value: 'OTHER', child: Text('Other')),
                       ],
                       onChanged: (value) {
@@ -365,17 +478,12 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                     const SizedBox(height: AppConstants.spacingMD),
 
                     // Membership Status
-                    DropdownButtonFormField<String>(
+                    CustomDropdown<String>(
+                      label: 'Membership Status',
+                      hint: 'Select membership status',
                       value: _selectedMembershipStatus,
-                      decoration: const InputDecoration(
-                        labelText: 'Membership Status',
-                        border: OutlineInputBorder(),
-                      ),
                       items: const [
-                        DropdownMenuItem(
-                          value: 'VISITOR',
-                          child: Text('Visitor'),
-                        ),
+                        DropdownMenuItem(value: 'VISITOR', child: Text('Visitor')),
                         DropdownMenuItem(
                           value: 'REGULAR_ATTENDEE',
                           child: Text('Regular Attendee'),
@@ -384,10 +492,7 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                           value: 'ACTIVE_MEMBER',
                           child: Text('Active Member'),
                         ),
-                        DropdownMenuItem(
-                          value: 'INACTIVE',
-                          child: Text('Inactive'),
-                        ),
+                        DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
                       ],
                       onChanged: (value) {
                         setState(() => _selectedMembershipStatus = value);
@@ -397,29 +502,15 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                     const SizedBox(height: AppConstants.spacingMD),
 
                     // Marital Status
-                    DropdownButtonFormField<String>(
+                    CustomDropdown<String>(
+                      label: 'Marital Status',
+                      hint: 'Select marital status',
                       value: _selectedMaritalStatus,
-                      decoration: const InputDecoration(
-                        labelText: 'Marital Status',
-                        border: OutlineInputBorder(),
-                      ),
                       items: const [
-                        DropdownMenuItem(
-                          value: 'SINGLE',
-                          child: Text('Single'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'MARRIED',
-                          child: Text('Married'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'DIVORCED',
-                          child: Text('Divorced'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'WIDOWED',
-                          child: Text('Widowed'),
-                        ),
+                        DropdownMenuItem(value: 'SINGLE', child: Text('Single')),
+                        DropdownMenuItem(value: 'MARRIED', child: Text('Married')),
+                        DropdownMenuItem(value: 'DIVORCED', child: Text('Divorced')),
+                        DropdownMenuItem(value: 'WIDOWED', child: Text('Widowed')),
                       ],
                       onChanged: (value) {
                         setState(() => _selectedMaritalStatus = value);
@@ -460,29 +551,17 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                       label: 'Occupation',
                       hint: 'Enter occupation',
                     ),
-                  ],
-                ),
-              ),
+              ],
             ),
 
             const SizedBox(height: AppConstants.spacingMD),
 
             // Church dates section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Church Information',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppConstants.spacingMD),
-
+            _buildFormSection(
+              'Church Information',
+              Icons.church_rounded,
+              AppColors.primary,
+              [
                     // Joined Date
                     InkWell(
                       onTap: () {
@@ -532,29 +611,17 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
+              ],
             ),
 
             const SizedBox(height: AppConstants.spacingMD),
 
             // Address section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Address',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppConstants.spacingMD),
-
+            _buildFormSection(
+              'Address',
+              Icons.location_on_rounded,
+              Colors.green,
+              [
                     // Street
                     CustomTextField(
                       controller: _streetController,
@@ -595,29 +662,17 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+              ],
             ),
 
             const SizedBox(height: AppConstants.spacingMD),
 
             // Emergency contact section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Emergency Contact',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppConstants.spacingMD),
-
+            _buildFormSection(
+              'Emergency Contact',
+              Icons.emergency_rounded,
+              Colors.red, // Matches "Emergency Contact" in detail screen
+              [
                     // Emergency contact name
                     CustomTextField(
                       controller: _emergencyNameController,
@@ -636,16 +691,20 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
 
                     const SizedBox(height: AppConstants.spacingMD),
 
-                    // Emergency contact phone
-                    CustomTextField(
-                      controller: _emergencyPhoneController,
+                    // Emergency contact phone with country code
+                    CustomPhoneField(
                       label: 'Phone',
                       hint: 'Emergency contact phone',
-                      keyboardType: TextInputType.phone,
+                      initialCountryCode: _getCountryCodeFromDialCode(_emergencyPhoneCountryCode),
+                      initialValue: _emergencyPhoneNumber,
+                      onChanged: (PhoneNumber phone) {
+                        setState(() {
+                          _emergencyPhoneCountryCode = '+${phone.countryCode}';
+                          _emergencyPhoneNumber = phone.number;
+                        });
+                      },
                     ),
-                  ],
-                ),
-              ),
+              ],
             ),
 
             const SizedBox(height: AppConstants.spacingXL),
@@ -659,6 +718,83 @@ class _MemberFormScreenState extends ConsumerState<MemberFormScreen> {
           ],
         ),
       ),
+      ),
+    );
+  }
+
+  Widget _buildFormSection(
+    String title,
+    IconData icon,
+    Color accentColor,
+    List<Widget> children,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(AppConstants.spacingMD),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accentColor.withValues(alpha: 0.08),
+                  accentColor.withValues(alpha: 0.02),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: accentColor, size: 18),
+                ),
+                const SizedBox(width: AppConstants.spacingMD),
+                Text(
+                  title,
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingLG),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -116,6 +116,35 @@ class MembersApiClient {
     }
   }
 
+  /// Get current user's member profile
+  /// GET /members/me
+  /// Reference: backend/src/modules/members/members.controller.ts (new endpoint)
+  Future<MemberModel> getMyMemberProfile() async {
+    try {
+      final response = await _dioClient.get('/members/me');
+
+      return MemberModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Update current user's member profile
+  /// PATCH /members/me
+  /// Reference: backend/src/modules/members/members.controller.ts (new endpoint)
+  Future<MemberModel> updateMyMemberProfile(Map<String, dynamic> data) async {
+    try {
+      final response = await _dioClient.patch(
+        '/members/me',
+        data: data,
+      );
+
+      return MemberModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Delete member (soft delete)
   /// DELETE /members/:id
   /// Reference: backend/src/modules/members/members.controller.ts line 126-135
@@ -178,6 +207,48 @@ class MembersApiClient {
       );
 
       return response.data as String;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Send invite to member for app signup
+  /// POST /members/:id/send-invite
+  /// Reference: backend/src/modules/members/members.controller.ts line 151-166
+  Future<SendInviteResponse> sendInvite(
+    String memberId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dioClient.post(
+        '/members/$memberId/send-invite',
+        data: data,
+      );
+
+      return SendInviteResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Resend invite to member
+  /// POST /members/:id/resend-invite
+  /// Reference: backend/src/modules/members/members.controller.ts line 168-182
+  Future<SendInviteResponse> resendInvite(
+    String memberId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dioClient.post(
+        '/members/$memberId/resend-invite',
+        data: data,
+      );
+
+      return SendInviteResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
     } catch (e) {
       rethrow;
     }

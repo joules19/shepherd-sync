@@ -23,6 +23,16 @@ export class UpdateUserDto {
   @IsOptional()
   avatar?: string;
 
+  @ApiPropertyOptional({ example: 'data:image/jpeg;base64,...' })
+  @IsString()
+  @IsOptional()
+  avatarBase64?: string;
+
+  @ApiPropertyOptional({ example: '+1' })
+  @IsString()
+  @IsOptional()
+  phoneCountryCode?: string;
+
   @ApiPropertyOptional({
     enum: UserRole,
     example: UserRole.PASTOR,

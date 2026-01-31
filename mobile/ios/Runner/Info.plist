@@ -45,5 +45,33 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Photo Library & Camera Permissions -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select a profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take a profile picture.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save images to your photo library.</string>
+
+	<!-- Deep Link Configuration for Invite System -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.shepherdsync.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>shepherdsync</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Universal Links (Associated Domains) -->
+	<!-- Note: This requires enabling Associated Domains capability in Xcode -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:shepherdsync.app</string>
+	</array>
 </dict>
 </plist>

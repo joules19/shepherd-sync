@@ -98,10 +98,10 @@ class AuthRepository {
   }
 
   /// Get current user profile
-  Future<Either<ApiException, UserModel>> getCurrentUser() async {
+  Future<Either<ApiException, Map<String, dynamic>>> getCurrentUser() async {
     try {
-      final user = await _apiClient.getCurrentUser();
-      return Right(user);
+      final data = await _apiClient.getCurrentUser();
+      return Right(data);
     } on ApiException catch (e) {
       return Left(e);
     } catch (e) {
@@ -115,6 +115,66 @@ class AuthRepository {
   /// Logout user
   Future<void> logout() async {
     await _clearAuthData();
+  }
+
+  /// Update user profile
+  Future<Either<ApiException, UserModel>> updateProfile(
+    String userId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final user = await _apiClient.updateProfile(userId, data);
+      return Right(user);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to update profile. Please try again.',
+        statusCode: 0,
+      ));
+    }
+  }
+
+  // ========================================
+  // INVITE SYSTEM
+  // ========================================
+
+  /// Validate invite token and get member details
+  Future<Either<ApiException, ValidateInviteResponse>> validateInvite(
+    String token,
+  ) async {
+    try {
+      final response = await _apiClient.validateInvite(token);
+      return Right(response);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to validate invite. Please check the link.',
+        statusCode: 0,
+      ));
+    }
+  }
+
+  /// Complete invite and create user account
+  Future<Either<ApiException, AuthResponse>> completeInvite(
+    CompleteInviteRequest request,
+  ) async {
+    try {
+      final response = await _apiClient.completeInvite(request);
+
+      // Store tokens and user data securely
+      await _saveAuthData(response);
+
+      return Right(response);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to complete signup. Please try again.',
+        statusCode: 0,
+      ));
+    }
   }
 
   // ========================================

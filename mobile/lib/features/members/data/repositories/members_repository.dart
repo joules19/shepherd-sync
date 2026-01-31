@@ -138,6 +138,38 @@ class MembersRepository {
     }
   }
 
+  /// Get current user's member profile
+  Future<Either<ApiException, MemberModel>> getMyMemberProfile() async {
+    try {
+      final member = await _apiClient.getMyMemberProfile();
+      return Right(member);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to fetch member profile. Please try again.',
+        statusCode: 0,
+      ));
+    }
+  }
+
+  /// Update current user's member profile
+  Future<Either<ApiException, MemberModel>> updateMyMemberProfile(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final member = await _apiClient.updateMyMemberProfile(data);
+      return Right(member);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to update member profile. Please try again.',
+        statusCode: 0,
+      ));
+    }
+  }
+
   /// Get member statistics
   Future<Either<ApiException, MemberStatsResponse>> getStats() async {
     try {
@@ -173,6 +205,54 @@ class MembersRepository {
     } catch (e) {
       return Left(ApiException(
         message: 'Failed to export members. Please try again.',
+        statusCode: 0,
+      ));
+    }
+  }
+
+  /// Send invite to member for app signup
+  Future<Either<ApiException, SendInviteResponse>> sendInvite(
+    String memberId,
+    String method, {
+    String? customMessage,
+  }) async {
+    try {
+      final data = {
+        'method': method,
+        if (customMessage != null) 'customMessage': customMessage,
+      };
+
+      final response = await _apiClient.sendInvite(memberId, data);
+      return Right(response);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to send invite. Please try again.',
+        statusCode: 0,
+      ));
+    }
+  }
+
+  /// Resend invite to member
+  Future<Either<ApiException, SendInviteResponse>> resendInvite(
+    String memberId,
+    String method, {
+    String? customMessage,
+  }) async {
+    try {
+      final data = {
+        'method': method,
+        if (customMessage != null) 'customMessage': customMessage,
+      };
+
+      final response = await _apiClient.resendInvite(memberId, data);
+      return Right(response);
+    } on ApiException catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ApiException(
+        message: 'Failed to resend invite. Please try again.',
         statusCode: 0,
       ));
     }

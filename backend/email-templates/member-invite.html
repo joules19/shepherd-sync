@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Invited!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
+
+          <!-- Header with Gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #6C4AB6 0%, #8E6DB8 100%); padding: 40px 30px; text-align: center;">
+              <!-- Church Logo (if available) -->
+              <!-- <img src="{{CHURCH_LOGO_URL}}" alt="{{CHURCH_NAME}}" style="max-width: 80px; margin-bottom: 20px;" /> -->
+
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
+                You're Invited!
+              </h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">
+                Welcome to {{CHURCH_NAME}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <!-- Greeting -->
+              <p style="color: #2c3e50; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hi {{MEMBER_FIRST_NAME}},
+              </p>
+
+              <!-- Message -->
+              <p style="color: #2c3e50; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                You've been invited to join <strong>{{CHURCH_NAME}}</strong> on Shepherd Sync!
+                Complete your profile to access events, giving, and stay connected with your church family.
+              </p>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="{{INVITE_URL}}" style="display: inline-block; background: linear-gradient(135deg, #6C4AB6 0%, #8E6DB8 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 20px rgba(108, 74, 182, 0.3);">
+                      Accept Invite & Get Started
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td style="border-bottom: 1px solid #e9ecef; padding: 10px 0;"></td>
+                </tr>
+              </table>
+
+              <!-- Manual Code Section -->
+              <div style="background-color: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+                <p style="color: #6c757d; font-size: 14px; margin: 0 0 10px 0; font-weight: 500;">
+                  Or enter this code in the app:
+                </p>
+                <div style="background-color: #ffffff; border: 2px dashed #6C4AB6; border-radius: 8px; padding: 12px 20px; display: inline-block;">
+                  <span style="font-family: 'Courier New', monospace; font-size: 24px; font-weight: 700; color: #6C4AB6; letter-spacing: 4px;">
+                    {{INVITE_CODE}}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Link Fallback -->
+              <p style="color: #6c757d; font-size: 13px; line-height: 1.5; margin: 20px 0 0 0;">
+                Button not working? Copy and paste this link:<br>
+                <a href="{{INVITE_URL}}" style="color: #6C4AB6; word-break: break-all;">{{INVITE_URL}}</a>
+              </p>
+
+              <!-- Expiration Notice -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 8px;">
+                    <p style="color: #856404; font-size: 13px; margin: 0; line-height: 1.5;">
+                      ⏰ <strong>Important:</strong> This invite expires on {{EXPIRATION_DATE}}.
+                      Please complete your profile before then.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+              <p style="color: #6c757d; font-size: 13px; margin: 0 0 10px 0;">
+                Sent by {{CHURCH_NAME}}
+              </p>
+              <p style="color: #adb5bd; font-size: 12px; margin: 0;">
+                Powered by <strong>Shepherd Sync</strong> - Church Management Made Simple
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+<!--
+Template Variables:
+- {{CHURCH_NAME}} - Name of the church
+- {{CHURCH_LOGO_URL}} - URL to church logo (optional)
+- {{MEMBER_FIRST_NAME}} - Member's first name
+- {{INVITE_URL}} - Full deep link URL (e.g., https://shepherdsync.app/invite/abc123...)
+- {{INVITE_CODE}} - 6-digit manual code (e.g., ABC123)
+- {{EXPIRATION_DATE}} - Formatted expiration date (e.g., February 15, 2024)
+
+Example Usage (Postmark):
+await postmark.sendEmailWithTemplate({
+  From: 'noreply@shepherdsync.com',
+  To: member.email,
+  TemplateId: 'member-invite',
+  TemplateModel: {
+    CHURCH_NAME: 'Grace Community Church',
+    CHURCH_LOGO_URL: 'https://...',
+    MEMBER_FIRST_NAME: 'John',
+    INVITE_URL: 'https://shepherdsync.app/invite/abc123xyz',
+    INVITE_CODE: 'ABC123',
+    EXPIRATION_DATE: 'February 15, 2024'
+  }
+});
+-->

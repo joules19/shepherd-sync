@@ -27,10 +27,10 @@ mixin _$UserModel {
   String get lastName => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
   String get organizationId => throw _privateConstructorUsedError;
+  String? get avatar => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
-  String? get profilePicture => throw _privateConstructorUsedError;
-  bool get isActive =>
-      throw _privateConstructorUsedError; // Backend doesn't return in auth response
+  String? get phoneCountryCode => throw _privateConstructorUsedError;
+  bool get isActive => throw _privateConstructorUsedError;
   bool? get emailVerified => throw _privateConstructorUsedError;
   DateTime? get lastLoginAt => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
@@ -58,8 +58,9 @@ abstract class $UserModelCopyWith<$Res> {
     String lastName,
     String role,
     String organizationId,
+    String? avatar,
     String? phone,
-    String? profilePicture,
+    String? phoneCountryCode,
     bool isActive,
     bool? emailVerified,
     DateTime? lastLoginAt,
@@ -89,8 +90,9 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? lastName = null,
     Object? role = null,
     Object? organizationId = null,
+    Object? avatar = freezed,
     Object? phone = freezed,
-    Object? profilePicture = freezed,
+    Object? phoneCountryCode = freezed,
     Object? isActive = null,
     Object? emailVerified = freezed,
     Object? lastLoginAt = freezed,
@@ -123,13 +125,17 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.organizationId
                 : organizationId // ignore: cast_nullable_to_non_nullable
                       as String,
+            avatar: freezed == avatar
+                ? _value.avatar
+                : avatar // ignore: cast_nullable_to_non_nullable
+                      as String?,
             phone: freezed == phone
                 ? _value.phone
                 : phone // ignore: cast_nullable_to_non_nullable
                       as String?,
-            profilePicture: freezed == profilePicture
-                ? _value.profilePicture
-                : profilePicture // ignore: cast_nullable_to_non_nullable
+            phoneCountryCode: freezed == phoneCountryCode
+                ? _value.phoneCountryCode
+                : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                       as String?,
             isActive: null == isActive
                 ? _value.isActive
@@ -173,8 +179,9 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String lastName,
     String role,
     String organizationId,
+    String? avatar,
     String? phone,
-    String? profilePicture,
+    String? phoneCountryCode,
     bool isActive,
     bool? emailVerified,
     DateTime? lastLoginAt,
@@ -203,8 +210,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? lastName = null,
     Object? role = null,
     Object? organizationId = null,
+    Object? avatar = freezed,
     Object? phone = freezed,
-    Object? profilePicture = freezed,
+    Object? phoneCountryCode = freezed,
     Object? isActive = null,
     Object? emailVerified = freezed,
     Object? lastLoginAt = freezed,
@@ -237,13 +245,17 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.organizationId
             : organizationId // ignore: cast_nullable_to_non_nullable
                   as String,
+        avatar: freezed == avatar
+            ? _value.avatar
+            : avatar // ignore: cast_nullable_to_non_nullable
+                  as String?,
         phone: freezed == phone
             ? _value.phone
             : phone // ignore: cast_nullable_to_non_nullable
                   as String?,
-        profilePicture: freezed == profilePicture
-            ? _value.profilePicture
-            : profilePicture // ignore: cast_nullable_to_non_nullable
+        phoneCountryCode: freezed == phoneCountryCode
+            ? _value.phoneCountryCode
+            : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                   as String?,
         isActive: null == isActive
             ? _value.isActive
@@ -280,8 +292,9 @@ class _$UserModelImpl implements _UserModel {
     required this.lastName,
     required this.role,
     required this.organizationId,
+    this.avatar,
     this.phone,
-    this.profilePicture,
+    this.phoneCountryCode,
     this.isActive = true,
     this.emailVerified,
     this.lastLoginAt,
@@ -305,13 +318,14 @@ class _$UserModelImpl implements _UserModel {
   @override
   final String organizationId;
   @override
+  final String? avatar;
+  @override
   final String? phone;
   @override
-  final String? profilePicture;
+  final String? phoneCountryCode;
   @override
   @JsonKey()
   final bool isActive;
-  // Backend doesn't return in auth response
   @override
   final bool? emailVerified;
   @override
@@ -323,7 +337,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, firstName: $firstName, lastName: $lastName, role: $role, organizationId: $organizationId, phone: $phone, profilePicture: $profilePicture, isActive: $isActive, emailVerified: $emailVerified, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, email: $email, firstName: $firstName, lastName: $lastName, role: $role, organizationId: $organizationId, avatar: $avatar, phone: $phone, phoneCountryCode: $phoneCountryCode, isActive: $isActive, emailVerified: $emailVerified, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -340,9 +354,10 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.role, role) || other.role == role) &&
             (identical(other.organizationId, organizationId) ||
                 other.organizationId == organizationId) &&
+            (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.profilePicture, profilePicture) ||
-                other.profilePicture == profilePicture) &&
+            (identical(other.phoneCountryCode, phoneCountryCode) ||
+                other.phoneCountryCode == phoneCountryCode) &&
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.emailVerified, emailVerified) ||
@@ -365,8 +380,9 @@ class _$UserModelImpl implements _UserModel {
     lastName,
     role,
     organizationId,
+    avatar,
     phone,
-    profilePicture,
+    phoneCountryCode,
     isActive,
     emailVerified,
     lastLoginAt,
@@ -396,8 +412,9 @@ abstract class _UserModel implements UserModel {
     required final String lastName,
     required final String role,
     required final String organizationId,
+    final String? avatar,
     final String? phone,
-    final String? profilePicture,
+    final String? phoneCountryCode,
     final bool isActive,
     final bool? emailVerified,
     final DateTime? lastLoginAt,
@@ -421,11 +438,13 @@ abstract class _UserModel implements UserModel {
   @override
   String get organizationId;
   @override
+  String? get avatar;
+  @override
   String? get phone;
   @override
-  String? get profilePicture;
+  String? get phoneCountryCode;
   @override
-  bool get isActive; // Backend doesn't return in auth response
+  bool get isActive;
   @override
   bool? get emailVerified;
   @override

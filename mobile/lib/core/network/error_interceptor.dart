@@ -18,8 +18,15 @@ class ErrorInterceptor extends Interceptor {
       debugPrint('   Path: ${err.requestOptions.path}');
     }
 
-    // Pass the error to the next handler
-    handler.next(err);
+    // Reject with the ApiException instead of passing DioException
+    handler.reject(
+      DioException(
+        requestOptions: err.requestOptions,
+        error: apiException,
+        type: err.type,
+        response: err.response,
+      ),
+    );
   }
 
   /// Convert DioException to ApiException

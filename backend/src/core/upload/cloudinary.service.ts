@@ -14,6 +14,38 @@ export class CloudinaryService {
     });
   }
 
+  /**
+   * Upload image from base64 string (for profile pictures from mobile)
+   */
+  async uploadBase64(
+    base64String: string,
+    folder: string,
+    organizationId: string,
+  ) {
+    const uploadFolder = `uploads/${organizationId}/${folder}`;
+
+    try {
+      const result = await cloudinary.uploader.upload(base64String, {
+        folder: uploadFolder,
+        transformation: [
+          { width: 800, height: 800, crop: 'limit' }, // Profile pictures don't need 1200px
+          { quality: 'auto' },
+          { fetch_format: 'auto' },
+        ],
+      });
+
+      this.logger.log(`Uploaded image to Cloudinary: ${result.secure_url}`);
+
+      return result.secure_url;
+    } catch (error) {
+      this.logger.error('Cloudinary base64 upload failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload image from file path (for server-side uploads)
+   */
   async uploadImage(
     file: any, // TODO: Add @types/multer and use Express.Multer.File
     folder: string,

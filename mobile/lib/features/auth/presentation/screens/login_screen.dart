@@ -8,6 +8,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../providers/auth_state_provider.dart';
+import 'invite_code_screen.dart';
 
 /// Beautiful login screen with premium UI
 class LoginScreen extends ConsumerStatefulWidget {
@@ -284,6 +285,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: AppConstants.spacingSM),
+
+                    // Invite code link
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const InviteCodeScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.key_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                      label: Text(
+                        'Have an invite code?',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: AppConstants.spacingLG),

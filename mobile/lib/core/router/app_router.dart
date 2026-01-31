@@ -10,6 +10,8 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/providers/onboarding_provider.dart';
 import '../../features/dashboard/presentation/screens/main_screen.dart';
 import '../../features/members/presentation/screens/members_list_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../constants/app_routes.dart';
 import '../widgets/custom_button.dart';
 import 'router_notifier.dart';
@@ -192,12 +194,30 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             const Scaffold(body: Center(child: Text('Giving - Coming Soon'))),
       ),
 
-      // Profile (placeholder)
+      // Profile
       GoRoute(
         path: AppRoutes.profile,
         name: 'profile',
-        builder: (context, state) =>
-            const Scaffold(body: Center(child: Text('Profile - Coming Soon'))),
+        builder: (context, state) => const ProfileScreen(),
+      ),
+
+      // Edit Profile
+      GoRoute(
+        path: AppRoutes.editProfile,
+        name: 'edit-profile',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const EditProfileScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        ),
       ),
 
       // Members Management (Admin/Pastor)

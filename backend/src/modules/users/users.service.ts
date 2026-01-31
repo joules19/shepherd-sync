@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/core/database/prisma.service';
 import { EmailService } from '@/core/email/email.service';
+import { CloudinaryService } from '@/core/upload/cloudinary.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
@@ -24,6 +25,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   /**
@@ -308,18 +310,46 @@ export class UsersService {
       throw new ForbiddenException('Cannot assign SUPER_ADMIN role');
     }
 
+    // Handle avatar upload if avatarBase64 is provided
+    let avatarUrl = updateDto.avatar;
+    if (updateDto.avatarBase64) {
+      try {
+        avatarUrl = await this.cloudinaryService.uploadBase64(
+          updateDto.avatarBase64,
+          'profile-pictures',
+          organizationId,
+        );
+      } catch (error) {
+        console.error('[UPDATE_USER] Failed to upload avatar to Cloudinary:', error);
+        // Continue with update even if avatar upload fails
+      }
+    }
+
+    // Prepare data for update (exclude avatarBase64 from data sent to Prisma)
+    const { avatarBase64, ...dataToUpdate } = updateDto;
+    if (avatarUrl) {
+      dataToUpdate.avatar = avatarUrl;
+    }
+
+    // Clean phone country code (remove duplicate + signs)
+    if (dataToUpdate.phoneCountryCode && typeof dataToUpdate.phoneCountryCode === 'string') {
+      dataToUpdate.phoneCountryCode = '+' + dataToUpdate.phoneCountryCode.replace(/\+/g, '').trim();
+    }
+
     // Update user
     const updated = await this.prisma.user.update({
       where: { id },
-      data: updateDto,
+      data: dataToUpdate,
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
         phone: true,
+        phoneCountryCode: true,
         avatar: true,
         role: true,
+        organizationId: true,
         isActive: true,
         emailVerified: true,
         updatedAt: true,

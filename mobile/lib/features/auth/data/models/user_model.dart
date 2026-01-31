@@ -14,9 +14,10 @@ class UserModel with _$UserModel {
     required String lastName,
     required String role,
     required String organizationId,
+    String? avatar,
     String? phone,
-    String? profilePicture,
-    @Default(true) bool isActive, // Backend doesn't return in auth response
+    String? phoneCountryCode,
+    @Default(true) bool isActive,
     bool? emailVerified,
     DateTime? lastLoginAt,
     DateTime? createdAt,

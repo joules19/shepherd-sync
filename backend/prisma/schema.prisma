@@ -81,14 +81,15 @@ model User {
   id             String @id @default(uuid())
   organizationId String
 
-  email        String   @unique
-  passwordHash String?
-  firstName    String
-  lastName     String
-  phone        String?
-  avatar       String?
-  role         UserRole
-  isActive     Boolean  @default(true)
+  email           String   @unique
+  passwordHash    String?
+  firstName       String
+  lastName        String
+  phoneCountryCode String?
+  phone           String?
+  avatar          String?
+  role            UserRole
+  isActive        Boolean  @default(true)
 
   // Email verification
   emailVerified   Boolean   @default(false)
@@ -147,14 +148,15 @@ model Member {
   userId         String? @unique
 
   // Personal info
-  firstName   String
-  lastName    String
-  email       String?
-  phone       String?
-  dateOfBirth DateTime?
-  gender      Gender?
-  address     Json?
-  photo       String?
+  firstName        String
+  lastName         String
+  email            String?
+  phoneCountryCode String?
+  phone            String?
+  dateOfBirth      DateTime?
+  gender           Gender?
+  address          Json?
+  photo            String?
 
   // Church-specific
   membershipStatus MembershipStatus @default(VISITOR)
@@ -169,12 +171,18 @@ model Member {
   // Emergency contact
   emergencyContact Json?
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User?        @relation(fields: [userId], references: [id])
+  // Invite status
+  inviteStatus InviteStatus @default(PENDING)
+  invitedAt    DateTime?
+  activatedAt  DateTime?
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id])
 
   // Relations
   attendanceRecords AttendanceRecord[]
   groupMemberships  GroupMembership[]
+  inviteTokens      InviteToken[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -204,6 +212,14 @@ enum MaritalStatus {
   MARRIED
   DIVORCED
   WIDOWED
+}
+
+enum InviteStatus {
+  PENDING
+  INVITED
+  ACTIVE
+  EXPIRED
+  INACTIVE
 }
 
 // ============================================
@@ -246,6 +262,45 @@ enum AgeGroup {
   CHILDREN_0_12
   TEENS_13_18
   YOUNG_ADULTS_19_25
+}
+
+// ============================================
+// MEMBER INVITES
+// ============================================
+
+model InviteToken {
+  id             String @id @default(uuid())
+  organizationId String
+  memberId       String
+
+  token      String   @unique
+  inviteCode String   @unique
+  expiresAt  DateTime
+
+  // Delivery
+  sentVia   InviteMethod
+  sentAt    DateTime     @default(now())
+  usedAt    DateTime?
+
+  // Status
+  isValid   Boolean      @default(true)
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([inviteCode])
+  @@index([memberId])
+  @@index([expiresAt])
+}
+
+enum InviteMethod {
+  SMS
+  EMAIL
+  WHATSAPP
+  MANUAL
 }
 
 // ============================================

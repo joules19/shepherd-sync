@@ -26,6 +26,7 @@ mixin _$MemberModel {
   String get lastName => throw _privateConstructorUsedError;
   String? get organizationId => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
+  String? get phoneCountryCode => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
   String? get photo => throw _privateConstructorUsedError;
   String? get dateOfBirth => throw _privateConstructorUsedError;
@@ -40,6 +41,9 @@ mixin _$MemberModel {
       throw _privateConstructorUsedError;
   Map<String, dynamic>? get customFields => throw _privateConstructorUsedError;
   String? get userId => throw _privateConstructorUsedError;
+  String? get inviteStatus => throw _privateConstructorUsedError;
+  DateTime? get invitedAt => throw _privateConstructorUsedError;
+  DateTime? get activatedAt => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
   DateTime? get deletedAt => throw _privateConstructorUsedError;
@@ -67,6 +71,7 @@ abstract class $MemberModelCopyWith<$Res> {
     String lastName,
     String? organizationId,
     String? email,
+    String? phoneCountryCode,
     String? phone,
     String? photo,
     String? dateOfBirth,
@@ -80,6 +85,9 @@ abstract class $MemberModelCopyWith<$Res> {
     EmergencyContactModel? emergencyContact,
     Map<String, dynamic>? customFields,
     String? userId,
+    String? inviteStatus,
+    DateTime? invitedAt,
+    DateTime? activatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -109,6 +117,7 @@ class _$MemberModelCopyWithImpl<$Res, $Val extends MemberModel>
     Object? lastName = null,
     Object? organizationId = freezed,
     Object? email = freezed,
+    Object? phoneCountryCode = freezed,
     Object? phone = freezed,
     Object? photo = freezed,
     Object? dateOfBirth = freezed,
@@ -122,6 +131,9 @@ class _$MemberModelCopyWithImpl<$Res, $Val extends MemberModel>
     Object? emergencyContact = freezed,
     Object? customFields = freezed,
     Object? userId = freezed,
+    Object? inviteStatus = freezed,
+    Object? invitedAt = freezed,
+    Object? activatedAt = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? deletedAt = freezed,
@@ -147,6 +159,10 @@ class _$MemberModelCopyWithImpl<$Res, $Val extends MemberModel>
             email: freezed == email
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            phoneCountryCode: freezed == phoneCountryCode
+                ? _value.phoneCountryCode
+                : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                       as String?,
             phone: freezed == phone
                 ? _value.phone
@@ -200,6 +216,18 @@ class _$MemberModelCopyWithImpl<$Res, $Val extends MemberModel>
                 ? _value.userId
                 : userId // ignore: cast_nullable_to_non_nullable
                       as String?,
+            inviteStatus: freezed == inviteStatus
+                ? _value.inviteStatus
+                : inviteStatus // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            invitedAt: freezed == invitedAt
+                ? _value.invitedAt
+                : invitedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            activatedAt: freezed == activatedAt
+                ? _value.activatedAt
+                : activatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -263,6 +291,7 @@ abstract class _$$MemberModelImplCopyWith<$Res>
     String lastName,
     String? organizationId,
     String? email,
+    String? phoneCountryCode,
     String? phone,
     String? photo,
     String? dateOfBirth,
@@ -276,6 +305,9 @@ abstract class _$$MemberModelImplCopyWith<$Res>
     EmergencyContactModel? emergencyContact,
     Map<String, dynamic>? customFields,
     String? userId,
+    String? inviteStatus,
+    DateTime? invitedAt,
+    DateTime? activatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -306,6 +338,7 @@ class __$$MemberModelImplCopyWithImpl<$Res>
     Object? lastName = null,
     Object? organizationId = freezed,
     Object? email = freezed,
+    Object? phoneCountryCode = freezed,
     Object? phone = freezed,
     Object? photo = freezed,
     Object? dateOfBirth = freezed,
@@ -319,6 +352,9 @@ class __$$MemberModelImplCopyWithImpl<$Res>
     Object? emergencyContact = freezed,
     Object? customFields = freezed,
     Object? userId = freezed,
+    Object? inviteStatus = freezed,
+    Object? invitedAt = freezed,
+    Object? activatedAt = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? deletedAt = freezed,
@@ -344,6 +380,10 @@ class __$$MemberModelImplCopyWithImpl<$Res>
         email: freezed == email
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        phoneCountryCode: freezed == phoneCountryCode
+            ? _value.phoneCountryCode
+            : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                   as String?,
         phone: freezed == phone
             ? _value.phone
@@ -397,6 +437,18 @@ class __$$MemberModelImplCopyWithImpl<$Res>
             ? _value.userId
             : userId // ignore: cast_nullable_to_non_nullable
                   as String?,
+        inviteStatus: freezed == inviteStatus
+            ? _value.inviteStatus
+            : inviteStatus // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        invitedAt: freezed == invitedAt
+            ? _value.invitedAt
+            : invitedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        activatedAt: freezed == activatedAt
+            ? _value.activatedAt
+            : activatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
         createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -423,6 +475,7 @@ class _$MemberModelImpl implements _MemberModel {
     required this.lastName,
     this.organizationId,
     this.email,
+    this.phoneCountryCode,
     this.phone,
     this.photo,
     this.dateOfBirth,
@@ -436,6 +489,9 @@ class _$MemberModelImpl implements _MemberModel {
     this.emergencyContact,
     final Map<String, dynamic>? customFields,
     this.userId,
+    this.inviteStatus,
+    this.invitedAt,
+    this.activatedAt,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -454,6 +510,8 @@ class _$MemberModelImpl implements _MemberModel {
   final String? organizationId;
   @override
   final String? email;
+  @override
+  final String? phoneCountryCode;
   @override
   final String? phone;
   @override
@@ -489,6 +547,12 @@ class _$MemberModelImpl implements _MemberModel {
   @override
   final String? userId;
   @override
+  final String? inviteStatus;
+  @override
+  final DateTime? invitedAt;
+  @override
+  final DateTime? activatedAt;
+  @override
   final DateTime? createdAt;
   @override
   final DateTime? updatedAt;
@@ -497,7 +561,7 @@ class _$MemberModelImpl implements _MemberModel {
 
   @override
   String toString() {
-    return 'MemberModel(id: $id, firstName: $firstName, lastName: $lastName, organizationId: $organizationId, email: $email, phone: $phone, photo: $photo, dateOfBirth: $dateOfBirth, gender: $gender, membershipStatus: $membershipStatus, joinedDate: $joinedDate, baptismDate: $baptismDate, maritalStatus: $maritalStatus, occupation: $occupation, address: $address, emergencyContact: $emergencyContact, customFields: $customFields, userId: $userId, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'MemberModel(id: $id, firstName: $firstName, lastName: $lastName, organizationId: $organizationId, email: $email, phoneCountryCode: $phoneCountryCode, phone: $phone, photo: $photo, dateOfBirth: $dateOfBirth, gender: $gender, membershipStatus: $membershipStatus, joinedDate: $joinedDate, baptismDate: $baptismDate, maritalStatus: $maritalStatus, occupation: $occupation, address: $address, emergencyContact: $emergencyContact, customFields: $customFields, userId: $userId, inviteStatus: $inviteStatus, invitedAt: $invitedAt, activatedAt: $activatedAt, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -513,6 +577,8 @@ class _$MemberModelImpl implements _MemberModel {
             (identical(other.organizationId, organizationId) ||
                 other.organizationId == organizationId) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.phoneCountryCode, phoneCountryCode) ||
+                other.phoneCountryCode == phoneCountryCode) &&
             (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.photo, photo) || other.photo == photo) &&
             (identical(other.dateOfBirth, dateOfBirth) ||
@@ -536,6 +602,12 @@ class _$MemberModelImpl implements _MemberModel {
               _customFields,
             ) &&
             (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.inviteStatus, inviteStatus) ||
+                other.inviteStatus == inviteStatus) &&
+            (identical(other.invitedAt, invitedAt) ||
+                other.invitedAt == invitedAt) &&
+            (identical(other.activatedAt, activatedAt) ||
+                other.activatedAt == activatedAt) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -553,6 +625,7 @@ class _$MemberModelImpl implements _MemberModel {
     lastName,
     organizationId,
     email,
+    phoneCountryCode,
     phone,
     photo,
     dateOfBirth,
@@ -566,6 +639,9 @@ class _$MemberModelImpl implements _MemberModel {
     emergencyContact,
     const DeepCollectionEquality().hash(_customFields),
     userId,
+    inviteStatus,
+    invitedAt,
+    activatedAt,
     createdAt,
     updatedAt,
     deletedAt,
@@ -592,6 +668,7 @@ abstract class _MemberModel implements MemberModel {
     required final String lastName,
     final String? organizationId,
     final String? email,
+    final String? phoneCountryCode,
     final String? phone,
     final String? photo,
     final String? dateOfBirth,
@@ -605,6 +682,9 @@ abstract class _MemberModel implements MemberModel {
     final EmergencyContactModel? emergencyContact,
     final Map<String, dynamic>? customFields,
     final String? userId,
+    final String? inviteStatus,
+    final DateTime? invitedAt,
+    final DateTime? activatedAt,
     final DateTime? createdAt,
     final DateTime? updatedAt,
     final DateTime? deletedAt,
@@ -623,6 +703,8 @@ abstract class _MemberModel implements MemberModel {
   String? get organizationId;
   @override
   String? get email;
+  @override
+  String? get phoneCountryCode;
   @override
   String? get phone;
   @override
@@ -649,6 +731,12 @@ abstract class _MemberModel implements MemberModel {
   Map<String, dynamic>? get customFields;
   @override
   String? get userId;
+  @override
+  String? get inviteStatus;
+  @override
+  DateTime? get invitedAt;
+  @override
+  DateTime? get activatedAt;
   @override
   DateTime? get createdAt;
   @override
@@ -918,6 +1006,7 @@ EmergencyContactModel _$EmergencyContactModelFromJson(
 mixin _$EmergencyContactModel {
   String? get name => throw _privateConstructorUsedError;
   String? get relationship => throw _privateConstructorUsedError;
+  String? get phoneCountryCode => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
 
   /// Serializes this EmergencyContactModel to a JSON map.
@@ -937,7 +1026,12 @@ abstract class $EmergencyContactModelCopyWith<$Res> {
     $Res Function(EmergencyContactModel) then,
   ) = _$EmergencyContactModelCopyWithImpl<$Res, EmergencyContactModel>;
   @useResult
-  $Res call({String? name, String? relationship, String? phone});
+  $Res call({
+    String? name,
+    String? relationship,
+    String? phoneCountryCode,
+    String? phone,
+  });
 }
 
 /// @nodoc
@@ -960,6 +1054,7 @@ class _$EmergencyContactModelCopyWithImpl<
   $Res call({
     Object? name = freezed,
     Object? relationship = freezed,
+    Object? phoneCountryCode = freezed,
     Object? phone = freezed,
   }) {
     return _then(
@@ -971,6 +1066,10 @@ class _$EmergencyContactModelCopyWithImpl<
             relationship: freezed == relationship
                 ? _value.relationship
                 : relationship // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            phoneCountryCode: freezed == phoneCountryCode
+                ? _value.phoneCountryCode
+                : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                       as String?,
             phone: freezed == phone
                 ? _value.phone
@@ -991,7 +1090,12 @@ abstract class _$$EmergencyContactModelImplCopyWith<$Res>
   ) = __$$EmergencyContactModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String? name, String? relationship, String? phone});
+  $Res call({
+    String? name,
+    String? relationship,
+    String? phoneCountryCode,
+    String? phone,
+  });
 }
 
 /// @nodoc
@@ -1011,6 +1115,7 @@ class __$$EmergencyContactModelImplCopyWithImpl<$Res>
   $Res call({
     Object? name = freezed,
     Object? relationship = freezed,
+    Object? phoneCountryCode = freezed,
     Object? phone = freezed,
   }) {
     return _then(
@@ -1022,6 +1127,10 @@ class __$$EmergencyContactModelImplCopyWithImpl<$Res>
         relationship: freezed == relationship
             ? _value.relationship
             : relationship // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        phoneCountryCode: freezed == phoneCountryCode
+            ? _value.phoneCountryCode
+            : phoneCountryCode // ignore: cast_nullable_to_non_nullable
                   as String?,
         phone: freezed == phone
             ? _value.phone
@@ -1035,7 +1144,12 @@ class __$$EmergencyContactModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$EmergencyContactModelImpl implements _EmergencyContactModel {
-  const _$EmergencyContactModelImpl({this.name, this.relationship, this.phone});
+  const _$EmergencyContactModelImpl({
+    this.name,
+    this.relationship,
+    this.phoneCountryCode,
+    this.phone,
+  });
 
   factory _$EmergencyContactModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmergencyContactModelImplFromJson(json);
@@ -1045,11 +1159,13 @@ class _$EmergencyContactModelImpl implements _EmergencyContactModel {
   @override
   final String? relationship;
   @override
+  final String? phoneCountryCode;
+  @override
   final String? phone;
 
   @override
   String toString() {
-    return 'EmergencyContactModel(name: $name, relationship: $relationship, phone: $phone)';
+    return 'EmergencyContactModel(name: $name, relationship: $relationship, phoneCountryCode: $phoneCountryCode, phone: $phone)';
   }
 
   @override
@@ -1060,12 +1176,15 @@ class _$EmergencyContactModelImpl implements _EmergencyContactModel {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.relationship, relationship) ||
                 other.relationship == relationship) &&
+            (identical(other.phoneCountryCode, phoneCountryCode) ||
+                other.phoneCountryCode == phoneCountryCode) &&
             (identical(other.phone, phone) || other.phone == phone));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, relationship, phone);
+  int get hashCode =>
+      Object.hash(runtimeType, name, relationship, phoneCountryCode, phone);
 
   /// Create a copy of EmergencyContactModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1089,6 +1208,7 @@ abstract class _EmergencyContactModel implements EmergencyContactModel {
   const factory _EmergencyContactModel({
     final String? name,
     final String? relationship,
+    final String? phoneCountryCode,
     final String? phone,
   }) = _$EmergencyContactModelImpl;
 
@@ -1099,6 +1219,8 @@ abstract class _EmergencyContactModel implements EmergencyContactModel {
   String? get name;
   @override
   String? get relationship;
+  @override
+  String? get phoneCountryCode;
   @override
   String? get phone;
 
@@ -1612,5 +1734,304 @@ abstract class _MemberStatsResponse implements MemberStatsResponse {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MemberStatsResponseImplCopyWith<_$MemberStatsResponseImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+SendInviteResponse _$SendInviteResponseFromJson(Map<String, dynamic> json) {
+  return _SendInviteResponse.fromJson(json);
+}
+
+/// @nodoc
+mixin _$SendInviteResponse {
+  bool get success => throw _privateConstructorUsedError;
+  String get message => throw _privateConstructorUsedError;
+  String get inviteToken => throw _privateConstructorUsedError;
+  String get inviteCode => throw _privateConstructorUsedError;
+  String get inviteUrl => throw _privateConstructorUsedError;
+  String get expiresAt => throw _privateConstructorUsedError;
+  String get sentVia => throw _privateConstructorUsedError;
+
+  /// Serializes this SendInviteResponse to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of SendInviteResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SendInviteResponseCopyWith<SendInviteResponse> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SendInviteResponseCopyWith<$Res> {
+  factory $SendInviteResponseCopyWith(
+    SendInviteResponse value,
+    $Res Function(SendInviteResponse) then,
+  ) = _$SendInviteResponseCopyWithImpl<$Res, SendInviteResponse>;
+  @useResult
+  $Res call({
+    bool success,
+    String message,
+    String inviteToken,
+    String inviteCode,
+    String inviteUrl,
+    String expiresAt,
+    String sentVia,
+  });
+}
+
+/// @nodoc
+class _$SendInviteResponseCopyWithImpl<$Res, $Val extends SendInviteResponse>
+    implements $SendInviteResponseCopyWith<$Res> {
+  _$SendInviteResponseCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SendInviteResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? success = null,
+    Object? message = null,
+    Object? inviteToken = null,
+    Object? inviteCode = null,
+    Object? inviteUrl = null,
+    Object? expiresAt = null,
+    Object? sentVia = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            success: null == success
+                ? _value.success
+                : success // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            message: null == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                      as String,
+            inviteToken: null == inviteToken
+                ? _value.inviteToken
+                : inviteToken // ignore: cast_nullable_to_non_nullable
+                      as String,
+            inviteCode: null == inviteCode
+                ? _value.inviteCode
+                : inviteCode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            inviteUrl: null == inviteUrl
+                ? _value.inviteUrl
+                : inviteUrl // ignore: cast_nullable_to_non_nullable
+                      as String,
+            expiresAt: null == expiresAt
+                ? _value.expiresAt
+                : expiresAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sentVia: null == sentVia
+                ? _value.sentVia
+                : sentVia // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$SendInviteResponseImplCopyWith<$Res>
+    implements $SendInviteResponseCopyWith<$Res> {
+  factory _$$SendInviteResponseImplCopyWith(
+    _$SendInviteResponseImpl value,
+    $Res Function(_$SendInviteResponseImpl) then,
+  ) = __$$SendInviteResponseImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    bool success,
+    String message,
+    String inviteToken,
+    String inviteCode,
+    String inviteUrl,
+    String expiresAt,
+    String sentVia,
+  });
+}
+
+/// @nodoc
+class __$$SendInviteResponseImplCopyWithImpl<$Res>
+    extends _$SendInviteResponseCopyWithImpl<$Res, _$SendInviteResponseImpl>
+    implements _$$SendInviteResponseImplCopyWith<$Res> {
+  __$$SendInviteResponseImplCopyWithImpl(
+    _$SendInviteResponseImpl _value,
+    $Res Function(_$SendInviteResponseImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SendInviteResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? success = null,
+    Object? message = null,
+    Object? inviteToken = null,
+    Object? inviteCode = null,
+    Object? inviteUrl = null,
+    Object? expiresAt = null,
+    Object? sentVia = null,
+  }) {
+    return _then(
+      _$SendInviteResponseImpl(
+        success: null == success
+            ? _value.success
+            : success // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        message: null == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                  as String,
+        inviteToken: null == inviteToken
+            ? _value.inviteToken
+            : inviteToken // ignore: cast_nullable_to_non_nullable
+                  as String,
+        inviteCode: null == inviteCode
+            ? _value.inviteCode
+            : inviteCode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        inviteUrl: null == inviteUrl
+            ? _value.inviteUrl
+            : inviteUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
+        expiresAt: null == expiresAt
+            ? _value.expiresAt
+            : expiresAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sentVia: null == sentVia
+            ? _value.sentVia
+            : sentVia // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SendInviteResponseImpl implements _SendInviteResponse {
+  const _$SendInviteResponseImpl({
+    required this.success,
+    required this.message,
+    required this.inviteToken,
+    required this.inviteCode,
+    required this.inviteUrl,
+    required this.expiresAt,
+    required this.sentVia,
+  });
+
+  factory _$SendInviteResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SendInviteResponseImplFromJson(json);
+
+  @override
+  final bool success;
+  @override
+  final String message;
+  @override
+  final String inviteToken;
+  @override
+  final String inviteCode;
+  @override
+  final String inviteUrl;
+  @override
+  final String expiresAt;
+  @override
+  final String sentVia;
+
+  @override
+  String toString() {
+    return 'SendInviteResponse(success: $success, message: $message, inviteToken: $inviteToken, inviteCode: $inviteCode, inviteUrl: $inviteUrl, expiresAt: $expiresAt, sentVia: $sentVia)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SendInviteResponseImpl &&
+            (identical(other.success, success) || other.success == success) &&
+            (identical(other.message, message) || other.message == message) &&
+            (identical(other.inviteToken, inviteToken) ||
+                other.inviteToken == inviteToken) &&
+            (identical(other.inviteCode, inviteCode) ||
+                other.inviteCode == inviteCode) &&
+            (identical(other.inviteUrl, inviteUrl) ||
+                other.inviteUrl == inviteUrl) &&
+            (identical(other.expiresAt, expiresAt) ||
+                other.expiresAt == expiresAt) &&
+            (identical(other.sentVia, sentVia) || other.sentVia == sentVia));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    success,
+    message,
+    inviteToken,
+    inviteCode,
+    inviteUrl,
+    expiresAt,
+    sentVia,
+  );
+
+  /// Create a copy of SendInviteResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SendInviteResponseImplCopyWith<_$SendInviteResponseImpl> get copyWith =>
+      __$$SendInviteResponseImplCopyWithImpl<_$SendInviteResponseImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SendInviteResponseImplToJson(this);
+  }
+}
+
+abstract class _SendInviteResponse implements SendInviteResponse {
+  const factory _SendInviteResponse({
+    required final bool success,
+    required final String message,
+    required final String inviteToken,
+    required final String inviteCode,
+    required final String inviteUrl,
+    required final String expiresAt,
+    required final String sentVia,
+  }) = _$SendInviteResponseImpl;
+
+  factory _SendInviteResponse.fromJson(Map<String, dynamic> json) =
+      _$SendInviteResponseImpl.fromJson;
+
+  @override
+  bool get success;
+  @override
+  String get message;
+  @override
+  String get inviteToken;
+  @override
+  String get inviteCode;
+  @override
+  String get inviteUrl;
+  @override
+  String get expiresAt;
+  @override
+  String get sentVia;
+
+  /// Create a copy of SendInviteResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SendInviteResponseImplCopyWith<_$SendInviteResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

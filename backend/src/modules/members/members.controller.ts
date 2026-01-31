@@ -24,11 +24,13 @@ import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { QueryMemberDto } from './dto/query-member.dto';
 import { ImportMembersDto } from './dto/import-members.dto';
+import { SendInviteDto } from './dto/send-invite.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { TenantGuard } from '@/common/guards/tenant.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { CurrentOrg } from '@/common/decorators/current-org.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
 
 @ApiTags('members')
@@ -72,6 +74,15 @@ export class MembersController {
     return this.membersService.findAll(organizationId, query);
   }
 
+  @Get('me')
+  @Roles(UserRole.MEMBER, UserRole.PARENT, UserRole.ADMIN, UserRole.PASTOR, UserRole.USHER, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get current user\'s member profile' })
+  @ApiResponse({ status: 200, description: 'Member profile retrieved' })
+  @ApiResponse({ status: 404, description: 'Member profile not found' })
+  getMyProfile(@CurrentOrg() organizationId: string, @CurrentUser() user: any) {
+    return this.membersService.getMemberByUserId(user.id, organizationId);
+  }
+
   @Get('stats')
   @Roles(UserRole.ADMIN, UserRole.PASTOR, UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get member statistics for dashboard' })
@@ -106,6 +117,19 @@ export class MembersController {
   @ApiResponse({ status: 404, description: 'Member not found' })
   findOne(@Param('id') id: string, @CurrentOrg() organizationId: string) {
     return this.membersService.findOne(id, organizationId);
+  }
+
+  @Patch('me')
+  @Roles(UserRole.MEMBER, UserRole.PARENT, UserRole.ADMIN, UserRole.PASTOR, UserRole.USHER, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update current user\'s member profile' })
+  @ApiResponse({ status: 200, description: 'Member profile updated' })
+  @ApiResponse({ status: 404, description: 'Member profile not found' })
+  updateMyProfile(
+    @Body() updateDto: UpdateMemberDto,
+    @CurrentOrg() organizationId: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.membersService.updateMemberByUserId(user.id, updateDto, organizationId);
   }
 
   @Patch(':id')
@@ -145,5 +169,38 @@ export class MembersController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   restore(@Param('id') id: string, @CurrentOrg() organizationId: string) {
     return this.membersService.restore(id, organizationId);
+  }
+
+  @Post(':id/send-invite')
+  @Roles(UserRole.ADMIN, UserRole.PASTOR, UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send invite to member for app signup' })
+  @ApiParam({ name: 'id', description: 'Member UUID' })
+  @ApiResponse({ status: 200, description: 'Invite sent successfully' })
+  @ApiResponse({ status: 404, description: 'Member not found' })
+  @ApiResponse({ status: 400, description: 'Member already has active account' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Pastor only' })
+  sendInvite(
+    @Param('id') id: string,
+    @Body() sendInviteDto: SendInviteDto,
+    @CurrentOrg() organizationId: string,
+  ) {
+    return this.membersService.sendInvite(id, sendInviteDto, organizationId);
+  }
+
+  @Post(':id/resend-invite')
+  @Roles(UserRole.ADMIN, UserRole.PASTOR, UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend expired invite' })
+  @ApiParam({ name: 'id', description: 'Member UUID' })
+  @ApiResponse({ status: 200, description: 'Invite resent successfully' })
+  @ApiResponse({ status: 404, description: 'Member not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Pastor only' })
+  resendInvite(
+    @Param('id') id: string,
+    @Body() sendInviteDto: SendInviteDto,
+    @CurrentOrg() organizationId: string,
+  ) {
+    return this.membersService.resendInvite(id, sendInviteDto, organizationId);
   }
 }

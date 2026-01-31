@@ -13,6 +13,7 @@ _$MemberModelImpl _$$MemberModelImplFromJson(Map<String, dynamic> json) =>
       lastName: json['lastName'] as String,
       organizationId: json['organizationId'] as String?,
       email: json['email'] as String?,
+      phoneCountryCode: json['phoneCountryCode'] as String?,
       phone: json['phone'] as String?,
       photo: json['photo'] as String?,
       dateOfBirth: json['dateOfBirth'] as String?,
@@ -32,6 +33,13 @@ _$MemberModelImpl _$$MemberModelImplFromJson(Map<String, dynamic> json) =>
             ),
       customFields: json['customFields'] as Map<String, dynamic>?,
       userId: json['userId'] as String?,
+      inviteStatus: json['inviteStatus'] as String?,
+      invitedAt: json['invitedAt'] == null
+          ? null
+          : DateTime.parse(json['invitedAt'] as String),
+      activatedAt: json['activatedAt'] == null
+          ? null
+          : DateTime.parse(json['activatedAt'] as String),
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -50,6 +58,7 @@ Map<String, dynamic> _$$MemberModelImplToJson(_$MemberModelImpl instance) =>
       'lastName': instance.lastName,
       'organizationId': instance.organizationId,
       'email': instance.email,
+      'phoneCountryCode': instance.phoneCountryCode,
       'phone': instance.phone,
       'photo': instance.photo,
       'dateOfBirth': instance.dateOfBirth,
@@ -63,6 +72,9 @@ Map<String, dynamic> _$$MemberModelImplToJson(_$MemberModelImpl instance) =>
       'emergencyContact': instance.emergencyContact,
       'customFields': instance.customFields,
       'userId': instance.userId,
+      'inviteStatus': instance.inviteStatus,
+      'invitedAt': instance.invitedAt?.toIso8601String(),
+      'activatedAt': instance.activatedAt?.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'deletedAt': instance.deletedAt?.toIso8601String(),
@@ -91,6 +103,7 @@ _$EmergencyContactModelImpl _$$EmergencyContactModelImplFromJson(
 ) => _$EmergencyContactModelImpl(
   name: json['name'] as String?,
   relationship: json['relationship'] as String?,
+  phoneCountryCode: json['phoneCountryCode'] as String?,
   phone: json['phone'] as String?,
 );
 
@@ -99,6 +112,7 @@ Map<String, dynamic> _$$EmergencyContactModelImplToJson(
 ) => <String, dynamic>{
   'name': instance.name,
   'relationship': instance.relationship,
+  'phoneCountryCode': instance.phoneCountryCode,
   'phone': instance.phone,
 };
 
@@ -140,4 +154,28 @@ Map<String, dynamic> _$$MemberStatsResponseImplToJson(
   'activeMembers': instance.activeMembers,
   'visitors': instance.visitors,
   'newThisMonth': instance.newThisMonth,
+};
+
+_$SendInviteResponseImpl _$$SendInviteResponseImplFromJson(
+  Map<String, dynamic> json,
+) => _$SendInviteResponseImpl(
+  success: json['success'] as bool,
+  message: json['message'] as String,
+  inviteToken: json['inviteToken'] as String,
+  inviteCode: json['inviteCode'] as String,
+  inviteUrl: json['inviteUrl'] as String,
+  expiresAt: json['expiresAt'] as String,
+  sentVia: json['sentVia'] as String,
+);
+
+Map<String, dynamic> _$$SendInviteResponseImplToJson(
+  _$SendInviteResponseImpl instance,
+) => <String, dynamic>{
+  'success': instance.success,
+  'message': instance.message,
+  'inviteToken': instance.inviteToken,
+  'inviteCode': instance.inviteCode,
+  'inviteUrl': instance.inviteUrl,
+  'expiresAt': instance.expiresAt,
+  'sentVia': instance.sentVia,
 };

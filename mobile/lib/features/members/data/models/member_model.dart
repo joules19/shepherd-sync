@@ -13,6 +13,7 @@ class MemberModel with _$MemberModel {
     required String lastName,
     String? organizationId,
     String? email,
+    String? phoneCountryCode,
     String? phone,
     String? photo,
     String? dateOfBirth,
@@ -26,6 +27,9 @@ class MemberModel with _$MemberModel {
     EmergencyContactModel? emergencyContact,
     Map<String, dynamic>? customFields,
     String? userId,
+    String? inviteStatus,
+    DateTime? invitedAt,
+    DateTime? activatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -56,6 +60,7 @@ class EmergencyContactModel with _$EmergencyContactModel {
   const factory EmergencyContactModel({
     String? name,
     String? relationship,
+    String? phoneCountryCode,
     String? phone,
   }) = _EmergencyContactModel;
 
@@ -167,4 +172,22 @@ class MemberStatsResponse with _$MemberStatsResponse {
 
   factory MemberStatsResponse.fromJson(Map<String, dynamic> json) =>
       _$MemberStatsResponseFromJson(json);
+}
+
+/// Send invite response
+/// Reference: backend/src/modules/members/members.service.ts sendInvite() return
+@freezed
+class SendInviteResponse with _$SendInviteResponse {
+  const factory SendInviteResponse({
+    required bool success,
+    required String message,
+    required String inviteToken,
+    required String inviteCode,
+    required String inviteUrl,
+    required String expiresAt,
+    required String sentVia,
+  }) = _SendInviteResponse;
+
+  factory SendInviteResponse.fromJson(Map<String, dynamic> json) =>
+      _$SendInviteResponseFromJson(json);
 }

@@ -50,7 +50,12 @@ class EmergencyContactDto {
   @IsOptional()
   relationship?: string;
 
-  @ApiPropertyOptional({ example: '+1234567890' })
+  @ApiPropertyOptional({ example: '+1' })
+  @IsString()
+  @IsOptional()
+  phoneCountryCode?: string;
+
+  @ApiPropertyOptional({ example: '2345678900' })
   @IsString()
   @IsOptional()
   phone?: string;
@@ -72,7 +77,12 @@ export class CreateMemberDto {
   @IsOptional()
   email?: string;
 
-  @ApiPropertyOptional({ example: '+1234567890' })
+  @ApiPropertyOptional({ example: '+1' })
+  @IsString()
+  @IsOptional()
+  phoneCountryCode?: string;
+
+  @ApiPropertyOptional({ example: '2345678900' })
   @IsString()
   @IsOptional()
   phone?: string;
@@ -97,6 +107,11 @@ export class CreateMemberDto {
   @IsString()
   @IsOptional()
   photo?: string;
+
+  @ApiPropertyOptional({ example: 'data:image/jpeg;base64,...' })
+  @IsString()
+  @IsOptional()
+  photoBase64?: string;
 
   @ApiPropertyOptional({
     enum: MembershipStatus,

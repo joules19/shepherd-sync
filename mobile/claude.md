@@ -37,6 +37,1652 @@
 
 ---
 
+## 🎨 Modern Design System (Blueprint)
+
+**CRITICAL: This section defines the modern design language implemented in Members screens and should be applied consistently across ALL new screens going forward.**
+
+### Visual Principles
+
+**State-of-the-Art Modern UI:**
+- Compact, efficient use of screen space
+- Gradient backgrounds for depth and visual interest
+- Glassmorphic effects for premium feel
+- Generous use of rounded corners (16px standard)
+- Color-coded sections for visual hierarchy
+- Soft shadows with color tints
+- Adaptive components (use `.adaptive()` for progress indicators)
+
+### Color System
+
+**Primary Gradient Pattern:**
+```dart
+// Header/Hero sections
+LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    AppColors.primary,
+    AppColors.primary.withValues(alpha: 0.8),  // or 0.7
+  ],
+)
+```
+
+**Accent Colors for Sections:**
+- **Contact Info**: `Colors.blue` (#2196F3)
+- **Personal Info**: `Colors.purple` (#9C27B0)
+- **Church Info**: `AppColors.primary` (your theme color)
+- **Emergency**: `Colors.red` (#F44336)
+- **Membership**: `Colors.blue`
+- **Forms/Basic**: `AppColors.primary`
+
+**Background Overlays & Tints:**
+```dart
+// Light tints for section backgrounds
+accentColor.withValues(alpha: 0.08)  // Header backgrounds
+accentColor.withValues(alpha: 0.02)  // Gradient end
+
+// Semi-transparent for badges/pills
+Colors.white.withValues(alpha: 0.2)  // On colored backgrounds
+accentColor.withValues(alpha: 0.1)   // On white backgrounds
+
+// Very subtle decorative elements
+Colors.white.withValues(alpha: 0.1)  // Large decorative circles
+Colors.white.withValues(alpha: 0.05) // Smaller decorative circles
+```
+
+### Shadow System
+
+**Soft Shadows (Standard Cards):**
+```dart
+BoxShadow(
+  color: accentColor.withValues(alpha: 0.08),  // or 0.1
+  blurRadius: 20,
+  offset: const Offset(0, 4),
+)
+```
+
+**Strong Shadows (Prominent Elements like FABs):**
+```dart
+BoxShadow(
+  color: accentColor.withValues(alpha: 0.3),
+  blurRadius: 20,
+  offset: const Offset(0, 8),
+)
+```
+
+**Icon Container Shadows:**
+```dart
+BoxShadow(
+  color: accentColor.withValues(alpha: 0.1),  // or 0.2
+  blurRadius: 8,
+  offset: const Offset(0, 2),
+)
+```
+
+### Border Radius Standards
+
+```dart
+BorderRadius.circular(16)  // Cards, major containers, search bars
+BorderRadius.circular(12)  // Buttons, medium containers
+BorderRadius.circular(8)   // Small containers, icon boxes
+BorderRadius.circular(20)  // Pills, badges (typically half the height)
+BorderRadius.circular(AppConstants.radiusFull) // Fully rounded chips
+```
+
+**Partial Rounded Corners:**
+```dart
+// Section headers
+BorderRadius.only(
+  topLeft: Radius.circular(16),
+  topRight: Radius.circular(16),
+)
+```
+
+### Typography Hierarchy
+
+**Headers:**
+```dart
+// Page titles (in app bar)
+fontSize: 20, fontWeight: FontWeight.bold
+
+// Section headers
+fontSize: 16-18, fontWeight: FontWeight.bold
+
+// Subsection headers
+fontSize: 16, fontWeight: FontWeight.bold
+```
+
+**Labels & Values:**
+```dart
+// Field labels (captions)
+fontSize: 11
+fontWeight: FontWeight.w500
+color: Colors.grey[500] or Colors.grey[600]
+letterSpacing: 0.5  // For uppercase labels
+
+// Value text
+fontSize: 15
+fontWeight: FontWeight.w600
+color: Colors.black (default)
+
+// Large stat values
+fontSize: 28
+fontWeight: FontWeight.bold
+color: accentColor
+```
+
+**Descriptive Text:**
+```dart
+// Subtitles, descriptions
+fontSize: 13
+color: Colors.grey[600]
+```
+
+### Spacing Scale (AppConstants)
+
+```dart
+spacingSM: 8px   // Tight groupings, icon padding
+spacingMD: 16px  // Standard spacing, card padding
+spacingLG: 24px  // Large gaps, form section padding
+spacingXL: 32px  // Extra large gaps, bottom padding before buttons
+```
+
+**Usage Patterns:**
+- Between sections: `spacingMD` (16px)
+- Between form fields: `spacingMD` (16px)
+- Section content padding: `spacingLG` (24px) for forms, `spacingMD` (16px) for readonly
+- Bottom spacing before action buttons: `spacingXL` (32px)
+- Icon-to-text spacing: `spacingMD` (16px)
+- Chip spacing: `spacingSM` (8px)
+
+### Header Patterns
+
+**Compact SliverAppBar (List Screens):**
+```dart
+SliverAppBar(
+  expandedHeight: 170,  // Compact, not 200+
+  floating: false,
+  pinned: true,
+  elevation: 0,
+  // White icons
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () => context.go(AppRoutes.dashboard),
+  ),
+  // Gradient background with decorative circles
+  flexibleSpace: FlexibleSpaceBar(
+    title: Text(
+      'Screen Title',
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+      ),
+    ),
+    background: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(/* ... */),
+      ),
+      child: Stack(
+        children: [
+          // Decorative circles for depth
+          Positioned(
+            top: -50, right: -50,
+            child: Container(
+              width: 200, height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+          ),
+          // More circles...
+        ],
+      ),
+    ),
+  ),
+)
+```
+
+**Hero Header (Detail Screens):**
+```dart
+SliverAppBar(
+  expandedHeight: 280,  // Taller for profile content
+  floating: false,
+  pinned: true,
+  elevation: 0,
+  backgroundColor: AppColors.primary,
+  // White icons
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () => Navigator.pop(context),
+  ),
+  flexibleSpace: FlexibleSpaceBar(
+    background: Stack(
+      fit: StackFit.expand,
+      children: [
+        // Gradient background
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(/* ... */),
+          ),
+        ),
+        // Decorative circles
+        // Profile content at bottom
+        Positioned(
+          bottom: 20,
+          left: 0,
+          right: 0,
+          child: _buildHeroProfileCard(data),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+**Compact AppBar (Form Screens):**
+```dart
+AppBar(
+  title: Text(
+    'Screen Title',
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
+    ),
+  ),
+  elevation: 0,
+  backgroundColor: AppColors.primary,
+  foregroundColor: Colors.white,
+)
+```
+
+### Card/Section Patterns
+
+**Modern Section Card:**
+```dart
+Container(
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: accentColor.withValues(alpha: 0.08),
+        blurRadius: 20,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Column(
+    children: [
+      // Gradient header with icon
+      Container(
+        padding: const EdgeInsets.all(AppConstants.spacingMD),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              accentColor.withValues(alpha: 0.08),
+              accentColor.withValues(alpha: 0.02),
+            ],
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Icon in white container with shadow
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(headerIcon, color: accentColor, size: 20),
+            ),
+            const SizedBox(width: AppConstants.spacingMD),
+            Text(
+              'Section Title',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Content
+      Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingMD),
+        child: Column(children: [...]),
+      ),
+    ],
+  ),
+)
+```
+
+**Form Section Pattern (CRITICAL for Consistency):**
+
+When building forms with multiple sections, **ALWAYS use a helper method like `_buildFormSection()`** to ensure consistency. Never mix Card widgets with custom section builders.
+
+```dart
+Widget _buildFormSection(
+  String title,
+  IconData icon,
+  Color accentColor,
+  List<Widget> children,
+) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: accentColor.withValues(alpha: 0.1),
+          blurRadius: 20,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with gradient and icon
+        Container(
+          padding: const EdgeInsets.all(AppConstants.spacingMD),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                accentColor.withValues(alpha: 0.08),
+                accentColor.withValues(alpha: 0.02),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: accentColor, size: 18),
+              ),
+              const SizedBox(width: AppConstants.spacingMD),
+              Text(
+                title,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Content with consistent padding
+        Padding(
+          padding: const EdgeInsets.all(AppConstants.spacingLG),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Usage - ALL sections should use this pattern
+_buildFormSection(
+  'Basic Information',
+  Icons.badge_rounded,
+  AppColors.primary,
+  [/* form fields */],
+),
+
+_buildFormSection(
+  'Membership Details',
+  Icons.card_membership_rounded,
+  Colors.blue,
+  [/* form fields */],
+),
+
+_buildFormSection(
+  'Church Information',
+  Icons.church_rounded,
+  AppColors.primary,
+  [/* form fields */],
+),
+
+_buildFormSection(
+  'Address',
+  Icons.location_on_rounded,
+  Colors.green,
+  [/* form fields */],
+),
+
+_buildFormSection(
+  'Emergency Contact',
+  Icons.emergency_rounded,
+  Colors.orange,
+  [/* form fields */],
+),
+```
+
+**Form Section Accent Colors (MUST match between detail and form screens):**
+- Basic Information (form) = Contact Information (detail): `Colors.blue`
+- Membership Details (form) = Personal Information (detail): `Colors.purple`
+- Church Information (both): `AppColors.primary`
+- Address (both): `Colors.green`
+- Emergency Contact (both): `Colors.red`
+
+**Color Mapping Reference:**
+```dart
+// Form Screen → Detail Screen
+_buildFormSection('Basic Information', ..., Colors.blue)       // → Contact Information
+_buildFormSection('Membership Details', ..., Colors.purple)    // → Personal Information
+_buildFormSection('Church Information', ..., AppColors.primary) // → Church Information
+_buildFormSection('Address', ..., Colors.green)                // → Address
+_buildFormSection('Emergency Contact', ..., Colors.red)        // → Emergency Contact
+```
+
+**CRITICAL: Never use plain Card widgets in forms - always use the section pattern for consistency.**
+
+### Custom Form Widgets
+
+**CRITICAL: Use consistent custom widgets for all form inputs.**
+
+**Available Custom Widgets:**
+- **Text inputs:** Use `CustomTextField` (already created)
+- **Dropdowns:** Use `CustomDropdown` (NEVER use `DropdownButtonFormField` directly)
+- **Phone numbers:** Use `CustomPhoneField` (with country code picker)
+- **Profile pictures:** Use `ProfilePicturePicker` (with image cropping)
+- All widgets share identical styling for consistency
+
+**Why CustomDropdown?**
+- Matches CustomTextField styling exactly (same borders, shadows, focus states)
+- Consistent label positioning and typography
+- Same animated focus shadow effect
+- Maintains design system integrity
+
+**CustomDropdown Usage:**
+```dart
+import '../../../../core/widgets/custom_dropdown.dart';
+
+// Basic usage
+CustomDropdown<String>(
+  label: 'Gender',
+  hint: 'Select gender',
+  value: _selectedGender,
+  items: const [
+    DropdownMenuItem(value: 'MALE', child: Text('Male')),
+    DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
+    DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+  ],
+  onChanged: (value) {
+    setState(() => _selectedGender = value);
+  },
+)
+
+// With validation
+CustomDropdown<String>(
+  label: 'Membership Status',
+  hint: 'Select membership status',
+  value: _selectedMembershipStatus,
+  items: const [
+    DropdownMenuItem(value: 'VISITOR', child: Text('Visitor')),
+    DropdownMenuItem(value: 'ACTIVE_MEMBER', child: Text('Active Member')),
+    DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
+  ],
+  onChanged: (value) {
+    setState(() => _selectedMembershipStatus = value);
+  },
+  validator: (value) {
+    if (value == null) return 'Please select a status';
+    return null;
+  },
+)
+
+// With prefix icon
+CustomDropdown<String>(
+  label: 'Marital Status',
+  hint: 'Select marital status',
+  value: _selectedMaritalStatus,
+  prefixIcon: Icon(Icons.favorite_rounded),
+  items: const [
+    DropdownMenuItem(value: 'SINGLE', child: Text('Single')),
+    DropdownMenuItem(value: 'MARRIED', child: Text('Married')),
+    DropdownMenuItem(value: 'DIVORCED', child: Text('Divorced')),
+    DropdownMenuItem(value: 'WIDOWED', child: Text('Widowed')),
+  ],
+  onChanged: (value) {
+    setState(() => _selectedMaritalStatus = value);
+  },
+)
+```
+
+**CustomTextField Usage:**
+```dart
+import '../../../../core/widgets/custom_text_field.dart';
+
+CustomTextField(
+  controller: _firstNameController,
+  label: 'First Name',
+  hint: 'Enter first name',
+  validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'First name is required';
+    }
+    return null;
+  },
+)
+```
+
+**CustomPhoneField Usage:**
+```dart
+import '../../../../core/widgets/custom_phone_field.dart';
+import 'package:intl_phone_field/phone_number.dart';
+
+CustomPhoneField(
+  label: 'Phone',
+  hint: 'Enter phone number',
+  initialCountryCode: 'US', // or extracted from phoneCountryCode
+  initialValue: _phoneNumber,
+  onChanged: (PhoneNumber phone) {
+    setState(() {
+      _phoneCountryCode = '+${phone.countryCode}';
+      _phoneNumber = phone.number;
+    });
+  },
+  validator: (PhoneNumber? phone) {
+    if (phone == null) return 'Phone is required';
+    return null;
+  },
+)
+```
+
+**ProfilePicturePicker Usage:**
+```dart
+import 'dart:io';
+import '../../../../core/widgets/profile_picture_picker.dart';
+
+// In state
+File? _profileImage;
+String? _profileImageUrl;
+
+// In build method
+ProfilePicturePicker(
+  imageUrl: _profileImageUrl, // Existing photo URL
+  imageFile: _profileImage,   // New photo file
+  onImageSelected: (file) {
+    setState(() {
+      _profileImage = file;
+    });
+  },
+  size: 120, // Diameter in pixels
+  showEditIcon: true,
+  backgroundColor: AppColors.primary, // Optional
+  iconColor: Colors.white, // Optional
+)
+```
+
+**Form Input Consistency Rules:**
+1. ❌ NEVER use `TextField` or `TextFormField` directly → ✅ Use `CustomTextField`
+2. ❌ NEVER use `DropdownButtonFormField` directly → ✅ Use `CustomDropdown`
+3. ❌ NEVER use raw phone input → ✅ Use `CustomPhoneField` with country code
+4. ❌ NEVER use basic image picker → ✅ Use `ProfilePicturePicker` with cropping
+5. ✅ All widgets share the same label style, borders, shadows, and focus effects
+6. ✅ Spacing between form fields: `AppConstants.spacingMD` (16px)
+7. ✅ Labels are always above the input (not floating)
+8. ✅ Focus state adds a subtle shadow (primary color, 10% alpha)
+9. ✅ Profile pictures use circular cropping (1:1 aspect ratio)
+10. ✅ Phone numbers store both countryCode and number separately
+
+**Info Row Pattern:**
+```dart
+Widget _buildModernInfoRow(IconData icon, String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: AppConstants.spacingMD),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Icon in light gray container
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: Colors.grey[600]),
+        ),
+        const SizedBox(width: AppConstants.spacingMD),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.grey[500],
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Value
+              Text(
+                value,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+### Stat Card Pattern
+
+```dart
+Widget _buildModernStatCard(
+  String label,
+  String value,
+  IconData icon,
+  Gradient gradient,
+  Color iconColor,
+) {
+  return Container(
+    padding: const EdgeInsets.all(AppConstants.spacingMD),
+    decoration: BoxDecoration(
+      gradient: gradient,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: iconColor.withValues(alpha: 0.1),
+        width: 1,
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Icon in white container
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: iconColor.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: iconColor, size: 20),
+        ),
+        const SizedBox(height: AppConstants.spacingSM),
+        // Label
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: Colors.grey[600],
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 2),
+        // Value
+        Text(
+          value,
+          style: AppTextStyles.headlineLarge.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: iconColor,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+### Search Bar Pattern
+
+```dart
+Container(
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        blurRadius: 20,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: TextField(
+    controller: _searchController,
+    decoration: InputDecoration(
+      hintText: 'Search...',
+      hintStyle: TextStyle(color: Colors.grey[400]),
+      prefixIcon: Icon(
+        Icons.search_rounded,
+        color: AppColors.primary,
+      ),
+      suffixIcon: _searchController.text.isNotEmpty
+          ? IconButton(
+              icon: Icon(Icons.clear_rounded, color: Colors.grey[400]),
+              onPressed: () {
+                _searchController.clear();
+                // Clear search
+              },
+            )
+          : null,
+      filled: false,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spacingMD,
+        vertical: AppConstants.spacingMD,
+      ),
+    ),
+  ),
+)
+```
+
+### FAB Pattern
+
+```dart
+Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(16),
+    gradient: LinearGradient(
+      colors: [
+        AppColors.primary,
+        AppColors.primary.withValues(alpha: 0.8),
+      ],
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.primary.withValues(alpha: 0.3),
+        blurRadius: 20,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  ),
+  child: FloatingActionButton.extended(
+    onPressed: _onTap,
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    icon: const Icon(Icons.add_rounded, color: Colors.white),
+    label: const Text(
+      'Add Item',
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+)
+```
+
+### Icon Standards
+
+**Use Rounded Icons:**
+- `Icons.arrow_back` → `Icons.arrow_back` (already rounded)
+- `Icons.filter_list` → `Icons.filter_list_rounded`
+- `Icons.search` → `Icons.search_rounded`
+- `Icons.add` → `Icons.add_rounded`
+- `Icons.edit` → `Icons.edit_rounded`
+- `Icons.delete` → `Icons.delete_rounded`
+- `Icons.person` → `Icons.person_rounded`
+- `Icons.email` → `Icons.email_rounded`
+- `Icons.phone` → `Icons.phone_rounded`
+- And so on...
+
+### Empty States
+
+```dart
+Center(
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      // Icon in colored circle
+      Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.people_outline_rounded,
+          size: 64,
+          color: AppColors.primary.withValues(alpha: 0.4),
+        ),
+      ),
+      const SizedBox(height: AppConstants.spacingLG),
+      Text(
+        'No Items Found',
+        style: AppTextStyles.headlineSmall.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: AppConstants.spacingSM),
+      Text(
+        'Add your first item to get started',
+        textAlign: TextAlign.center,
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: Colors.grey[600],
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+### Loading States
+
+**ALWAYS use adaptive progress indicators:**
+```dart
+// Good ✅
+CircularProgressIndicator.adaptive()
+
+// Bad ❌
+CircularProgressIndicator()
+```
+
+This ensures iOS gets Cupertino spinner, Android gets Material spinner.
+
+### Shimmer Loading States
+
+**CRITICAL: Use shimmer skeleton loading for content areas, not just spinners.**
+
+**Why Shimmer:**
+- Premium, polished feel
+- Users see the UI structure while loading
+- Reduces perceived loading time
+- Modern pattern used by Facebook, LinkedIn, etc.
+
+**Package:** `shimmer: ^3.x`
+
+**When to Use Shimmer:**
+- List views (skeleton of list items)
+- Card grids (skeleton cards)
+- Detail screens (skeleton content)
+- Dashboard widgets (skeleton stats/charts)
+
+**When to Use Progress Indicator Instead:**
+- Full-screen initial loads
+- Pull-to-refresh actions
+- Small button loading states
+- "Load more" pagination
+
+#### Shimmer Widget Patterns
+
+**List Item Skeleton:**
+```dart
+import 'package:shimmer/shimmer.dart';
+
+Widget _buildShimmerListItem() {
+  return Container(
+    margin: const EdgeInsets.only(bottom: AppConstants.spacingMD),
+    padding: const EdgeInsets.all(AppConstants.spacingMD),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // Avatar shimmer
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppConstants.spacingMD),
+
+        // Text content shimmer
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: double.infinity,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 120,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Usage in list
+Widget _buildShimmerList() {
+  return ListView.builder(
+    padding: const EdgeInsets.all(AppConstants.spacingMD),
+    itemCount: 6, // Show 6 skeleton items
+    itemBuilder: (context, index) => _buildShimmerListItem(),
+  );
+}
+```
+
+**Stat Card Skeleton:**
+```dart
+Widget _buildShimmerStatCard() {
+  return Container(
+    padding: const EdgeInsets.all(AppConstants.spacingMD),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Icon shimmer
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppConstants.spacingSM),
+
+        // Label shimmer
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 60,
+            height: 11,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+
+        // Value shimmer
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 50,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+**Section Card Skeleton:**
+```dart
+Widget _buildShimmerSection() {
+  return Container(
+    margin: const EdgeInsets.only(bottom: AppConstants.spacingMD),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        // Header shimmer
+        Container(
+          padding: const EdgeInsets.all(AppConstants.spacingMD),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Row(
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppConstants.spacingMD),
+              Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 120,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Content rows shimmer
+        Padding(
+          padding: const EdgeInsets.all(AppConstants.spacingMD),
+          child: Column(
+            children: List.generate(
+              3,
+              (index) => Padding(
+                padding: const EdgeInsets.only(bottom: AppConstants.spacingMD),
+                child: Row(
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppConstants.spacingMD),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 80,
+                              height: 11,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: double.infinity,
+                              height: 15,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+**Dashboard Card Skeleton:**
+```dart
+Widget _buildShimmerDashboardCard() {
+  return Container(
+    padding: const EdgeInsets.all(AppConstants.spacingLG),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingMD),
+            Expanded(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: double.infinity,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingLG),
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: double.infinity,
+            height: 14,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 150,
+            height: 14,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+**Shimmer Best Practices:**
+- **Base color:** `Colors.grey[300]` - The static background
+- **Highlight color:** `Colors.grey[100]` - The shimmer sweep
+- **Border radius:** Match the actual component (4px for text, 8px for icons, etc.)
+- **Skeleton count:** Show 3-6 skeleton items to fill viewport
+- **Dimensions:** Match actual content sizes as closely as possible
+- **Container color:** Always set to white (or card background)
+- **Duration:** Default shimmer duration is fine (1.5s), don't customize unless needed
+
+**Implementation Pattern:**
+```dart
+// In your build method
+if (state.isLoading && state.items.isEmpty) {
+  return _buildShimmerList();
+}
+
+if (state.items.isEmpty) {
+  return _buildEmptyState();
+}
+
+return _buildItemsList(state.items);
+```
+
+**Shimmer Implementation Status:**
+- ✅ Members List Screen - Implemented (list items + stat cards)
+- ⏳ Dashboard Screen - TODO: Add shimmer when converting mock data to async API calls
+  - Quick action grid shimmer
+  - Stats overview shimmer
+  - Announcements carousel shimmer
+  - Upcoming events shimmer
+- ⏳ Other screens - Add as async data loading is implemented
+
+**Reference Implementation:**
+- See `lib/features/members/presentation/screens/members_list_screen.dart:530-610` for complete shimmer examples
+
+### Bottom Sheet Patterns
+
+**CRITICAL: ALWAYS use bottom sheets with draggable handles instead of AlertDialog for modals, confirmations, and actions.**
+
+**Why Bottom Sheets:**
+- More mobile-friendly and thumb-reachable
+- Modern iOS/Android pattern
+- Draggable for easy dismissal
+- Better UX on phones
+- Consistent with Material Design 3
+
+**❌ NEVER USE:**
+```dart
+// Bad - Don't use AlertDialog
+showDialog(
+  context: context,
+  builder: (context) => AlertDialog(
+    title: Text('Confirm'),
+    content: Text('Are you sure?'),
+    actions: [/*...*/],
+  ),
+);
+```
+
+**✅ ALWAYS USE Bottom Sheets:**
+
+#### Confirmation Sheet Pattern
+
+```dart
+Future<bool?> _showConfirmationSheet(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String confirmText,
+  Color? confirmColor,
+  IconData? icon,
+}) {
+  return showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.spacingLG),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Draggable handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: AppConstants.spacingLG),
+
+              // Icon (optional)
+              if (icon != null)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: (confirmColor ?? Colors.red).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: confirmColor ?? Colors.red,
+                  ),
+                ),
+
+              if (icon != null) const SizedBox(height: AppConstants.spacingLG),
+
+              // Title
+              Text(
+                title,
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppConstants.spacingSM),
+
+              // Message
+              Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppConstants.spacingLG),
+
+              // Action buttons - STACKED VERTICALLY for better UX hierarchy
+              Column(
+                children: [
+                  // Primary action at bottom (easier to reach with thumb)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: confirmColor ?? Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppConstants.spacingMD,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        confirmText,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingMD),
+
+                  // Secondary action (Cancel) - less prominent
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppConstants.spacingMD,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// Usage
+final confirmed = await _showConfirmationSheet(
+  context,
+  title: 'Delete Member',
+  message: 'Are you sure you want to delete this member? This action can be undone later.',
+  confirmText: 'Delete',
+  confirmColor: Colors.red,
+  icon: Icons.delete_rounded,
+);
+
+if (confirmed == true) {
+  // Perform action
+}
+```
+
+#### Action Sheet Pattern (Multiple Options)
+
+```dart
+void _showActionSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Draggable handle
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppConstants.spacingMD,
+              ),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spacingLG,
+              ),
+              child: Text(
+                'Choose Action',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppConstants.spacingMD),
+
+            // Options
+            _buildActionItem(
+              icon: Icons.edit_rounded,
+              label: 'Edit',
+              onTap: () {
+                Navigator.pop(context);
+                // Handle edit
+              },
+            ),
+            _buildActionItem(
+              icon: Icons.share_rounded,
+              label: 'Share',
+              onTap: () {
+                Navigator.pop(context);
+                // Handle share
+              },
+            ),
+            _buildActionItem(
+              icon: Icons.delete_rounded,
+              label: 'Delete',
+              color: Colors.red,
+              onTap: () {
+                Navigator.pop(context);
+                // Show delete confirmation sheet
+              },
+            ),
+
+            const SizedBox(height: AppConstants.spacingSM),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildActionItem({
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+  Color? color,
+}) {
+  final itemColor = color ?? Colors.grey[800];
+  return InkWell(
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spacingLG,
+        vertical: AppConstants.spacingMD,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: itemColor, size: 24),
+          const SizedBox(width: AppConstants.spacingMD),
+          Text(
+            label,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: itemColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+#### Filter/Options Sheet Pattern
+
+```dart
+// Already implemented in members_filter_sheet.dart
+// Key features:
+// - Draggable handle at top
+// - Title with "Clear All" action
+// - Sectioned content with chips
+// - Primary action button at bottom
+// - SafeArea for proper padding
+```
+
+**Bottom Sheet Best Practices:**
+- Always include draggable handle (40x4 Container with grey[300])
+- **CRITICAL: Stack buttons vertically, NOT horizontally**
+  - Primary action button at bottom (easiest thumb reach)
+  - Secondary/cancel button above it
+  - Full width buttons with `SizedBox(width: double.infinity)`
+  - Spacing of spacingMD (16px) between buttons
+- Use `isScrollControlled: true` for sheets with dynamic/long content
+- Use `backgroundColor: Colors.transparent` to show rounded corners
+- Wrap content in SafeArea to handle notches
+- Set `mainAxisSize: MainAxisSize.min` for auto-sizing
+- Use 20px top corner radius
+- Pad content with spacingLG (24px)
+- Buttons should be 12px border radius
+- Icon badges should use 10% alpha of accent color
+- Dangerous actions (delete) should use red color
+- Primary button uses elevated style, secondary uses outlined style
+- Button text: 16px, w600 for primary, w500 for secondary
+
+### Reference Implementation
+
+**See these files for complete examples:**
+- `lib/features/members/presentation/screens/members_list_screen.dart` - List screen with SliverAppBar, search, stats
+- `lib/features/members/presentation/screens/member_detail_screen.dart` - Detail screen with hero header
+- `lib/features/members/presentation/screens/member_form_screen.dart` - Form screen with sectioned layout
+- `lib/features/members/presentation/widgets/members_filter_sheet.dart` - Bottom sheet with filter chips
+
+**Apply this design system to ALL new screens for consistency.**
+
+---
+
 ## 🏗️ Architecture
 
 ### Clean Architecture Layers
@@ -404,6 +2050,198 @@ Future<ApiResult<List<Event>>> getEvents() async {
 - Support Android 12+ splash screen API
 
 ---
+
+## 🔗 Deep Links & Invite System
+
+### Invite-First Member Onboarding
+
+**Flow:**
+1. Admin creates member with minimal details (name + phone/email)
+2. System sends invite link via SMS/Email/WhatsApp
+3. Member taps link → App opens (or redirects to App Store)
+4. Member completes profile & creates account
+5. Status changes from PENDING → ACTIVE
+
+**Advantages:**
+- ✅ Admin controls access (no open registration)
+- ✅ Email/phone verification built-in
+- ✅ Prevents duplicate accounts
+- ✅ Single source of truth
+- ✅ Modern OAuth support (Google/Apple)
+
+### Deep Link Configuration
+
+**Android (AndroidManifest.xml):**
+```xml
+<intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data
+        android:scheme="https"
+        android:host="shepherdsync.app"
+        android:pathPrefix="/invite" />
+</intent-filter>
+```
+
+**iOS (Info.plist):**
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>shepherdsync</string>
+        </array>
+    </dict>
+</array>
+<key>com.apple.developer.associated-domains</key>
+<array>
+    <string>applinks:shepherdsync.app</string>
+</array>
+```
+
+### Deep Link Handler
+
+```dart
+import 'package:app_links/app_links.dart';
+import 'deep_link_handler.dart';
+
+// In main.dart or root widget
+@override
+void initState() {
+  super.initState();
+  DeepLinkHandler().init(context);
+}
+
+// Handler automatically listens for:
+// - https://shepherdsync.app/invite/{token}
+// - shepherdsync://invite/{token}
+```
+
+### Invite System Backend Endpoints
+
+**Send Invite:**
+```dart
+POST /members/:id/send-invite
+Body: {
+  "method": "SMS", // or EMAIL, WHATSAPP, MANUAL
+  "customMessage": "Optional custom message"
+}
+
+Response: {
+  "inviteToken": "abc123...",
+  "inviteCode": "ABC123", // 6-digit human-readable
+  "inviteUrl": "https://shepherdsync.app/invite/abc123...",
+  "expiresAt": "2024-02-15T00:00:00Z"
+}
+```
+
+**Validate Invite:**
+```dart
+GET /auth/validate-invite?token=abc123
+
+Response: {
+  "valid": true,
+  "member": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "organizationName": "Grace Church"
+  },
+  "expiresAt": "2024-02-15T00:00:00Z"
+}
+```
+
+**Complete Invite:**
+```dart
+POST /auth/complete-invite
+Body: {
+  "token": "abc123...",
+  "password": "SecurePass123!", // OR
+  "googleIdToken": "google-token", // OR
+  "appleAuthCode": "apple-code",
+  "profilePhotoBase64": "data:image/jpeg;base64,..." // Optional
+}
+
+Response: {
+  "accessToken": "jwt...",
+  "refreshToken": "jwt...",
+  "user": {...},
+  "organization": {...}
+}
+```
+
+### Member Model with Invite Fields
+
+```dart
+@freezed
+class MemberModel with _$MemberModel {
+  const factory MemberModel({
+    required String id,
+    required String firstName,
+    required String lastName,
+    String? email,
+    String? phoneCountryCode, // ✅ NEW
+    String? phone,
+    String? photo,
+    String? userId,
+    String? inviteStatus, // ✅ NEW: PENDING, INVITED, ACTIVE, EXPIRED
+    DateTime? invitedAt,  // ✅ NEW
+    DateTime? activatedAt, // ✅ NEW
+    // ... other fields
+  }) = _MemberModel;
+}
+```
+
+### Invite Signup Screen Pattern
+
+**Key Features:**
+- Profile photo picker (with cropping)
+- Pre-filled member details (read-only)
+- Password creation with validation
+- Google/Apple Sign-In buttons
+- Modern card-based layout
+- Loading state while validating invite
+
+**Implementation:**
+```dart
+// See: lib/features/auth/presentation/screens/invite_signup_screen.dart
+InviteSignupScreen(inviteToken: 'abc123...')
+```
+
+### Send Invite UI Pattern
+
+**In Member Detail Screen:**
+- Show "Send Invite" button if `member.userId == null`
+- Display invite status badge (PENDING/INVITED/ACTIVE)
+- Bottom sheet with delivery options (SMS/Email/Copy Link)
+- Beautiful option cards with icons
+
+**Implementation:**
+```dart
+// Send invite button in app bar
+if (member.userId == null && member.inviteStatus != 'ACTIVE')
+  IconButton(
+    icon: const Icon(Icons.send_rounded),
+    onPressed: () => _showSendInviteSheet(context, member),
+  ),
+```
+
+### Testing Deep Links
+
+**Android (via ADB):**
+```bash
+adb shell am start -W -a android.intent.action.VIEW \
+  -d "https://shepherdsync.app/invite/abc123" \
+  com.yourcompany.shepherdsync
+```
+
+**iOS (via Terminal):**
+```bash
+xcrun simctl openurl booted "https://shepherdsync.app/invite/abc123"
+```
 
 ## 🔄 Offline Support Strategy
 

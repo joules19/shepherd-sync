@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../constants/app_constants.dart';
+import '../errors/api_exception.dart';
 import 'auth_interceptor.dart';
 import 'error_interceptor.dart';
 
@@ -61,6 +62,25 @@ class DioClient {
   Dio get instance => _dio;
 
   // ========================================
+  // ERROR HANDLING HELPER
+  // ========================================
+
+  /// Handles DioException and extracts ApiException
+  /// This is called automatically by all convenience methods
+  Never _handleError(Object error) {
+    if (error is DioException && error.error is ApiException) {
+      // Extract and throw the actual ApiException from ErrorInterceptor
+      throw error.error as ApiException;
+    }
+    // If it's already an ApiException, rethrow it
+    if (error is ApiException) {
+      throw error;
+    }
+    // Otherwise rethrow the original error
+    throw error;
+  }
+
+  // ========================================
   // CONVENIENCE METHODS
   // ========================================
 
@@ -72,13 +92,17 @@ class DioClient {
     CancelToken? cancelToken,
     void Function(int, int)? onReceiveProgress,
   }) async {
-    return await _dio.get(
-      path,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-      onReceiveProgress: onReceiveProgress,
-    );
+    try {
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   /// POST request
@@ -91,15 +115,19 @@ class DioClient {
     void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress,
   }) async {
-    return await _dio.post(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-      onSendProgress: onSendProgress,
-      onReceiveProgress: onReceiveProgress,
-    );
+    try {
+      return await _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   /// PUT request
@@ -112,15 +140,19 @@ class DioClient {
     void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress,
   }) async {
-    return await _dio.put(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-      onSendProgress: onSendProgress,
-      onReceiveProgress: onReceiveProgress,
-    );
+    try {
+      return await _dio.put(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   /// PATCH request
@@ -133,15 +165,19 @@ class DioClient {
     void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress,
   }) async {
-    return await _dio.patch(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-      onSendProgress: onSendProgress,
-      onReceiveProgress: onReceiveProgress,
-    );
+    try {
+      return await _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   /// DELETE request
@@ -152,13 +188,17 @@ class DioClient {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    return await _dio.delete(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-    );
+    try {
+      return await _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   /// Download file
@@ -173,16 +213,20 @@ class DioClient {
     dynamic data,
     Options? options,
   }) async {
-    return await _dio.download(
-      urlPath,
-      savePath,
-      onReceiveProgress: onReceiveProgress,
-      queryParameters: queryParameters,
-      cancelToken: cancelToken,
-      deleteOnError: deleteOnError,
-      lengthHeader: lengthHeader,
-      data: data,
-      options: options,
-    );
+    try {
+      return await _dio.download(
+        urlPath,
+        savePath,
+        onReceiveProgress: onReceiveProgress,
+        queryParameters: queryParameters,
+        cancelToken: cancelToken,
+        deleteOnError: deleteOnError,
+        lengthHeader: lengthHeader,
+        data: data,
+        options: options,
+      );
+    } catch (e) {
+      _handleError(e);
+    }
   }
 }

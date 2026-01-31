@@ -195,6 +195,7 @@ class MembersFilterSheet extends ConsumerWidget {
               const SizedBox(height: AppConstants.spacingSM),
               Wrap(
                 spacing: AppConstants.spacingSM,
+                runSpacing: AppConstants.spacingSM,
                 children: [
                   _buildFilterChip(
                     context,

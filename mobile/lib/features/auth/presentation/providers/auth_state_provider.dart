@@ -53,10 +53,17 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
             // Token might be expired, clear auth state
             state = const AuthState(isAuthenticated: false, isLoading: false);
           },
-          (user) {
+          (data) {
             // User is authenticated
+            // Parse user and organization from response
+            final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+            final organization = data['organization'] != null
+                ? OrganizationModel.fromJson(data['organization'] as Map<String, dynamic>)
+                : null;
+
             state = AuthState(
               user: user,
+              organization: organization,
               isAuthenticated: true,
               isLoading: false,
             );
@@ -163,8 +170,46 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       (error) {
         // Handle error silently or show notification
       },
+      (data) {
+        // Parse user and organization from response
+        final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+        final organization = data['organization'] != null
+            ? OrganizationModel.fromJson(data['organization'] as Map<String, dynamic>)
+            : null;
+
+        state = state.copyWith(user: user, organization: organization);
+      },
+    );
+  }
+
+  /// Update user profile
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    if (state.user == null) return false;
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    final result = await _authRepository.updateProfile(
+      state.user!.id,
+      data,
+    );
+
+    return result.fold(
+      (error) {
+        debugPrint('❌ Update profile failed: ${error.message}');
+        state = state.copyWith(
+          isLoading: false,
+          error: error.message,
+        );
+        return false;
+      },
       (user) {
-        state = state.copyWith(user: user);
+        debugPrint('✅ Profile updated successfully');
+        state = state.copyWith(
+          user: user,
+          isLoading: false,
+          error: null,
+        );
+        return true;
       },
     );
   }

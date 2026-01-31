@@ -5,6 +5,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/database/prisma.service';
+import { EmailService } from '@/core/email/email.service';
+import { CloudinaryService } from '@/core/upload/cloudinary.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { QueryMemberDto } from './dto/query-member.dto';
@@ -13,7 +15,11 @@ import { createPaginatedResponse, PaginatedResult } from '@/common/types/paginat
 
 @Injectable()
 export class MembersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   /**
    * Create a new member
@@ -60,6 +66,11 @@ export class MembersService {
       }
     }
 
+    // Clean phone country code (remove duplicate + signs)
+    const cleanPhoneCountryCode = createDto.phoneCountryCode
+      ? '+' + createDto.phoneCountryCode.replace(/\+/g, '').trim()
+      : createDto.phoneCountryCode;
+
     // Create member
     const member = await this.prisma.member.create({
       data: {
@@ -68,6 +79,7 @@ export class MembersService {
         lastName: createDto.lastName,
         email: createDto.email,
         phone: createDto.phone,
+        phoneCountryCode: cleanPhoneCountryCode,
         dateOfBirth: createDto.dateOfBirth ? new Date(createDto.dateOfBirth) : null,
         gender: createDto.gender,
         address: createDto.address as any,
@@ -307,6 +319,11 @@ export class MembersService {
       }
     }
 
+    // Clean phone country code (remove duplicate + signs)
+    const cleanPhoneCountryCode = updateDto.phoneCountryCode
+      ? '+' + updateDto.phoneCountryCode.replace(/\+/g, '').trim()
+      : updateDto.phoneCountryCode;
+
     // Update member
     const updated = await this.prisma.member.update({
       where: { id },
@@ -315,6 +332,7 @@ export class MembersService {
         lastName: updateDto.lastName,
         email: updateDto.email,
         phone: updateDto.phone,
+        phoneCountryCode: cleanPhoneCountryCode,
         dateOfBirth: updateDto.dateOfBirth ? new Date(updateDto.dateOfBirth) : undefined,
         gender: updateDto.gender,
         address: updateDto.address as any,
@@ -328,6 +346,124 @@ export class MembersService {
         emergencyContact: updateDto.emergencyContact as any,
         userId: updateDto.userId,
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Get member by user ID (for current user to view their own profile)
+   */
+  async getMemberByUserId(userId: string, organizationId: string) {
+    const member = await this.prisma.member.findFirst({
+      where: {
+        userId,
+        organizationId,
+        deletedAt: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Member profile not found');
+    }
+
+    return member;
+  }
+
+  /**
+   * Update member by user ID (for current user to update their own profile)
+   */
+  async updateMemberByUserId(
+    userId: string,
+    updateDto: UpdateMemberDto,
+    organizationId: string,
+  ) {
+    const member = await this.prisma.member.findFirst({
+      where: {
+        userId,
+        organizationId,
+        deletedAt: null,
+      },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Member profile not found');
+    }
+
+    // Members cannot change their own userId or membershipStatus
+    // These are admin-controlled fields
+    const { userId: _, membershipStatus: __, ...allowedFields } = updateDto;
+
+    // Upload photo to Cloudinary if photoBase64 is provided
+    let photoUrl = updateDto.photo;
+    if (updateDto.photoBase64) {
+      try {
+        photoUrl = await this.cloudinaryService.uploadBase64(
+          updateDto.photoBase64,
+          'profile-pictures',
+          organizationId,
+        );
+      } catch (error) {
+        console.error('[UPDATE_MEMBER] Failed to upload photo to Cloudinary:', error);
+        // Continue with update even if photo upload fails
+      }
+    }
+
+    // Prepare data for update (exclude photoBase64 from data sent to Prisma)
+    const { photoBase64: ____, address, emergencyContact, ...dataToUpdate } = allowedFields;
+    if (photoUrl) {
+      dataToUpdate.photo = photoUrl;
+    }
+
+    // Handle JSON fields properly for Prisma
+    const updateData: any = { ...dataToUpdate };
+    if (address) {
+      updateData.address = address as any;
+    }
+    if (emergencyContact) {
+      updateData.emergencyContact = emergencyContact as any;
+    }
+
+    // Convert date strings to Date objects for Prisma
+    if (updateData.dateOfBirth && typeof updateData.dateOfBirth === 'string') {
+      updateData.dateOfBirth = new Date(updateData.dateOfBirth);
+    }
+    if (updateData.joinedDate && typeof updateData.joinedDate === 'string') {
+      updateData.joinedDate = new Date(updateData.joinedDate);
+    }
+    if (updateData.baptismDate && typeof updateData.baptismDate === 'string') {
+      updateData.baptismDate = new Date(updateData.baptismDate);
+    }
+
+    // Clean phone country codes (remove duplicate + signs)
+    if (updateData.phoneCountryCode && typeof updateData.phoneCountryCode === 'string') {
+      updateData.phoneCountryCode = '+' + updateData.phoneCountryCode.replace(/\+/g, '').trim();
+    }
+
+    const updated = await this.prisma.member.update({
+      where: { id: member.id },
+      data: updateData,
       include: {
         user: {
           select: {
@@ -606,5 +742,198 @@ export class MembersService {
       }, {}),
       ageDistribution: ageGroups,
     };
+  }
+
+  /**
+   * Send invite to member for app signup
+   */
+  async sendInvite(
+    memberId: string,
+    sendInviteDto: any,
+    organizationId: string,
+  ) {
+    // Find member and validate
+    const member = await this.prisma.member.findFirst({
+      where: { id: memberId, organizationId, deletedAt: null },
+      include: { organization: true },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    if (member.userId) {
+      throw new BadRequestException('Member already has an active account');
+    }
+
+    if (!member.phone && !member.email) {
+      throw new BadRequestException('Member must have phone or email to receive invite');
+    }
+
+    // Generate invite token (32 char random string)
+    const token = this.generateRandomToken(32);
+
+    // Generate human-readable invite code (6 digit alphanumeric)
+    const inviteCode = this.generateInviteCode();
+
+    // Set expiration to 7 days from now
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Create invite token record
+    await this.prisma.inviteToken.create({
+      data: {
+        memberId,
+        organizationId,
+        token,
+        inviteCode,
+        expiresAt,
+        sentVia: sendInviteDto.method,
+      },
+    });
+
+    // Update member status
+    await this.prisma.member.update({
+      where: { id: memberId },
+      data: {
+        inviteStatus: 'INVITED',
+        invitedAt: new Date(),
+      },
+    });
+
+    // Generate invite URL
+    const inviteUrl = `https://shepherdsync.app/invite/${token}`;
+
+    // Send invite via selected method
+    await this.sendInviteNotification(
+      member,
+      sendInviteDto.method,
+      inviteUrl,
+      inviteCode,
+      expiresAt,
+      sendInviteDto.customMessage,
+    );
+
+    return {
+      success: true,
+      message: `Invite sent via ${sendInviteDto.method}`,
+      inviteToken: token,
+      inviteCode,
+      inviteUrl,
+      expiresAt,
+      sentVia: sendInviteDto.method,
+    };
+  }
+
+  /**
+   * Resend expired or failed invite
+   */
+  async resendInvite(
+    memberId: string,
+    sendInviteDto: any,
+    organizationId: string,
+  ) {
+    // Invalidate old tokens
+    await this.prisma.inviteToken.updateMany({
+      where: { memberId, isValid: true },
+      data: { isValid: false },
+    });
+
+    // Send new invite
+    return this.sendInvite(memberId, sendInviteDto, organizationId);
+  }
+
+  /**
+   * Generate random secure token
+   */
+  private generateRandomToken(length: number): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    for (let i = 0; i < length; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return token;
+  }
+
+  /**
+   * Generate human-readable 6-digit invite code
+   */
+  private generateInviteCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
+  /**
+   * Send invite notification via selected method
+   */
+  private async sendInviteNotification(
+    member: any,
+    method: string,
+    inviteUrl: string,
+    inviteCode: string,
+    expiresAt: Date,
+    customMessage?: string,
+  ) {
+    const churchName = member.organization.name;
+    const memberName = member.firstName;
+
+    const defaultMessage = `${memberName}, you've been invited to join ${churchName} on Shepherd Sync! Tap the link to complete your profile and get started.`;
+    const message = customMessage || defaultMessage;
+
+    // Format expiration date
+    const formattedExpirationDate = expiresAt.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    switch (method) {
+      case 'SMS':
+        if (member.phone) {
+          // TODO: Integrate with SMS service (Twilio)
+          console.log(`[SMS] To: ${member.phone}`);
+          console.log(`[SMS] Message: ${message}`);
+          console.log(`[SMS] Link: ${inviteUrl}`);
+          console.log(`[SMS] Code: ${inviteCode}`);
+          // await this.smsService.send(member.phone, `${message}\n\n${inviteUrl}\n\nOr use code: ${inviteCode}`);
+        }
+        break;
+
+      case 'EMAIL':
+        if (member.email) {
+          await this.emailService.sendMemberInviteEmail({
+            to: member.email,
+            memberFirstName: memberName,
+            churchName,
+            inviteUrl,
+            inviteCode,
+            expirationDate: formattedExpirationDate,
+            churchLogoUrl: member.organization.logoUrl,
+          });
+        }
+        break;
+
+      case 'WHATSAPP':
+        if (member.phone) {
+          // TODO: Integrate with WhatsApp Business API
+          console.log(`[WHATSAPP] To: ${member.phone}`);
+          console.log(`[WHATSAPP] Message: ${message}`);
+          console.log(`[WHATSAPP] Link: ${inviteUrl}`);
+          console.log(`[WHATSAPP] Code: ${inviteCode}`);
+          // await this.whatsappService.send(member.phone, `${message}\n\n${inviteUrl}\n\nOr use code: ${inviteCode}`);
+        }
+        break;
+
+      case 'MANUAL':
+        // Admin will copy and share manually
+        console.log(`[MANUAL] Invite ready to be shared manually`);
+        console.log(`[MANUAL] URL: ${inviteUrl}`);
+        console.log(`[MANUAL] Code: ${inviteCode}`);
+        break;
+    }
   }
 }

@@ -1,8 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { CompleteInviteDto } from '@/modules/members/dto/complete-invite.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -47,6 +48,25 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile' })
   async getProfile(@CurrentUser() user: any) {
-    return user;
+    // Fetch full user profile from database to include avatar and other fields
+    return this.authService.validateUser(user.id);
+  }
+
+  @Public()
+  @Get('validate-invite')
+  @ApiOperation({ summary: 'Validate invite token and get member details' })
+  @ApiResponse({ status: 200, description: 'Invite is valid' })
+  @ApiResponse({ status: 400, description: 'Invite is invalid or expired' })
+  async validateInvite(@Query('token') token: string) {
+    return this.authService.validateInvite(token);
+  }
+
+  @Public()
+  @Post('complete-invite')
+  @ApiOperation({ summary: 'Complete member invite and create user account' })
+  @ApiResponse({ status: 201, description: 'Signup completed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid invite or token expired' })
+  async completeInvite(@Body() completeInviteDto: CompleteInviteDto) {
+    return this.authService.completeInvite(completeInviteDto);
   }
 }

@@ -12,15 +12,15 @@ class RouterNotifier extends ChangeNotifier {
   RouterNotifier(this._ref) {
     // Listen to auth state changes
     _ref.listen<AuthState>(authStateProvider, (previous, next) {
-      // Notify GoRouter to re-evaluate redirects when auth state changes
-      if (previous?.isAuthenticated != next.isAuthenticated ||
-          previous?.isLoading != next.isLoading) {
+      // Only notify GoRouter when authentication status changes (login/logout)
+      // Don't notify on loading state changes (profile updates, etc.)
+      if (previous?.isAuthenticated != next.isAuthenticated) {
         debugPrint('🔔 RouterNotifier: Auth state changed, notifying router');
         debugPrint(
-          '   Previous: auth=${previous?.isAuthenticated}, loading=${previous?.isLoading}',
+          '   Previous: auth=${previous?.isAuthenticated}',
         );
         debugPrint(
-          '   Next: auth=${next.isAuthenticated}, loading=${next.isLoading}',
+          '   Next: auth=${next.isAuthenticated}',
         );
         notifyListeners();
       }

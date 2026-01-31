@@ -1,0 +1,99 @@
+# WhatsApp Template for Member Invite
+
+## Template:
+```
+Hi {{FIRST_NAME}}! 👋
+
+🏛 You've been invited to join *{{CHURCH_NAME}}* on Shepherd Sync!
+
+Complete your profile to:
+✅ Access events
+✅ Give online
+✅ Stay connected
+
+*Get Started:*
+{{INVITE_URL}}
+
+*Or enter code in app:*
+`{{INVITE_CODE}}`
+
+⏰ _Expires: {{EXPIRATION_DATE}}_
+
+Questions? Reply to this message!
+
+- {{CHURCH_NAME}}
+```
+
+## Example:
+```
+Hi John! 👋
+
+🏛 You've been invited to join *Grace Community Church* on Shepherd Sync!
+
+Complete your profile to:
+✅ Access events
+✅ Give online
+✅ Stay connected
+
+*Get Started:*
+https://shepherdsync.app/invite/abc123xyz
+
+*Or enter code in app:*
+`ABC123`
+
+⏰ _Expires: February 15, 2024_
+
+Questions? Reply to this message!
+
+- Grace Community Church
+```
+
+## WhatsApp Business API Implementation:
+```typescript
+await whatsappClient.sendMessage({
+  to: member.phone,
+  type: 'text',
+  text: {
+    body: `Hi ${member.firstName}! 👋\n\n🏛 You've been invited to join *${churchName}* on Shepherd Sync!\n\nComplete your profile to:\n✅ Access events\n✅ Give online\n✅ Stay connected\n\n*Get Started:*\n${inviteUrl}\n\n*Or enter code in app:*\n\`${inviteCode}\`\n\n⏰ _Expires: ${formattedExpirationDate}_\n\nQuestions? Reply to this message!\n\n- ${churchName}`
+  }
+});
+```
+
+## WhatsApp Template Message (Pre-approved):
+```json
+{
+  "name": "member_invite",
+  "language": "en",
+  "category": "ACCOUNT_UPDATE",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "You're Invited to {{1}}"
+    },
+    {
+      "type": "BODY",
+      "text": "Hi {{1}}!\n\nYou've been invited to join your church on Shepherd Sync. Tap the button below to get started, or use code: {{2}}\n\nThis invite expires on {{3}}."
+    },
+    {
+      "type": "BUTTON",
+      "sub_type": "URL",
+      "index": "0",
+      "parameters": [
+        {
+          "type": "text",
+          "text": "{{INVITE_TOKEN}}"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Best Practices:
+1. ✅ Use WhatsApp formatting (*, _, `)
+2. ✅ Include both link AND code
+3. ✅ Emojis are great on WhatsApp (use tastefully)
+4. ✅ Enable two-way messaging (they can reply)
+5. ✅ Use WhatsApp Business API template for official messages
+6. ✅ Button-based templates have higher engagement

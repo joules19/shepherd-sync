@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -59,24 +60,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   Future<void> _handleLogout() async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
+    // Show confirmation bottom sheet
+    final confirmed = await _showConfirmationSheet(
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+      confirmColor: AppColors.error,
+      icon: Icons.logout_rounded,
     );
 
     if (confirmed == true && mounted) {
@@ -91,26 +81,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   Future<void> _handleResetOnboarding() async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset Onboarding'),
-        content: const Text(
+    // Show confirmation bottom sheet
+    final confirmed = await _showConfirmationSheet(
+      title: 'Reset Onboarding',
+      message:
           'This will reset onboarding and logout. Are you sure?\n\n(This is for testing only)',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Reset'),
-          ),
-        ],
-      ),
+      confirmText: 'Reset',
+      confirmColor: AppColors.error,
+      icon: Icons.refresh_rounded,
     );
 
     if (confirmed == true && mounted) {
@@ -269,36 +247,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                             opacity: _fadeAnimation,
                             child: Row(
                               children: [
-                                // Profile Avatar with gradient border
-                                Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.white.withValues(alpha: 0.3),
-                                        Colors.white.withValues(alpha: 0.1),
-                                      ],
+                                // Profile Avatar with gradient border (tappable)
+                                GestureDetector(
+                                  onTap: () => context.push(AppRoutes.profile),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white.withValues(alpha: 0.3),
+                                          Colors.white.withValues(alpha: 0.1),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: Colors.white.withValues(
-                                      alpha: 0.2,
+                                    child: CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      backgroundImage: user.avatar != null
+                                          ? NetworkImage(user.avatar!)
+                                          : null,
+                                      child: user.avatar == null
+                                          ? Text(
+                                              '${user.firstName[0]}${user.lastName[0]}',
+                                              style: AppTextStyles.bodyLarge
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            )
+                                          : null,
                                     ),
-                                    backgroundImage: user.profilePicture != null
-                                        ? NetworkImage(user.profilePicture!)
-                                        : null,
-                                    child: user.profilePicture == null
-                                        ? Text(
-                                            '${user.firstName[0]}${user.lastName[0]}',
-                                            style: AppTextStyles.bodyLarge
-                                                .copyWith(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          )
-                                        : null,
                                   ),
                                 ),
                                 const SizedBox(width: AppConstants.spacingSM),
@@ -529,5 +510,142 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
+  }
+
+  Future<bool?> _showConfirmationSheet({
+    required String title,
+    required String message,
+    required String confirmText,
+    Color? confirmColor,
+    IconData? icon,
+  }) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingLG),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Draggable handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spacingLG),
+
+                // Icon
+                if (icon != null)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: (confirmColor ?? Colors.red).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 32,
+                      color: confirmColor ?? Colors.red,
+                    ),
+                  ),
+
+                if (icon != null) const SizedBox(height: AppConstants.spacingLG),
+
+                // Title
+                Text(
+                  title,
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppConstants.spacingSM),
+
+                // Message
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppConstants.spacingLG),
+
+                // Action buttons - stacked vertically
+                Column(
+                  children: [
+                    // Primary action
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: confirmColor ?? Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppConstants.spacingMD,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          confirmText,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.spacingMD),
+
+                    // Cancel action
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppConstants.spacingMD,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

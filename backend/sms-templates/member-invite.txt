@@ -1,0 +1,53 @@
+# SMS Template for Member Invite
+
+## Template:
+```
+Hi {{FIRST_NAME}}! 👋
+
+You've been invited to join {{CHURCH_NAME}} on Shepherd Sync.
+
+Tap to get started:
+{{INVITE_URL}}
+
+Or enter code in app: {{INVITE_CODE}}
+
+This invite expires on {{EXPIRATION_DATE}}.
+
+- {{CHURCH_NAME}}
+```
+
+## Example:
+```
+Hi John! 👋
+
+You've been invited to join Grace Community Church on Shepherd Sync.
+
+Tap to get started:
+https://shepherdsync.app/invite/abc123xyz
+
+Or enter code in app: ABC123
+
+This invite expires on Feb 15, 2024.
+
+- Grace Community Church
+```
+
+## Twilio Implementation:
+```typescript
+await twilioClient.messages.create({
+  to: member.phone,
+  from: process.env.TWILIO_PHONE_NUMBER,
+  body: `Hi ${member.firstName}! 👋\n\nYou've been invited to join ${churchName} on Shepherd Sync.\n\nTap to get started:\n${inviteUrl}\n\nOr enter code in app: ${inviteCode}\n\nThis invite expires on ${formattedExpirationDate}.\n\n- ${churchName}`
+});
+```
+
+## Character Count: ~180-220 characters
+(Well within SMS limit of 160 chars per segment, this will be 2 segments)
+
+## Best Practices:
+1. ✅ Include both link AND code for fallback
+2. ✅ Keep message under 300 chars for 2 SMS segments
+3. ✅ Use shortened URLs if needed (bit.ly, custom domain)
+4. ✅ Include expiration date
+5. ✅ Use emoji sparingly (👋 works well)
+6. ✅ Sign with church name

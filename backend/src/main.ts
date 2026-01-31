@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import * as compression from 'compression';
+import * as express from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -12,6 +13,10 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
+
+  // Increase body size limit for base64 image uploads (10MB)
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Security
   app.use(helmet());
